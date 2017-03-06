@@ -1,1 +1,1 @@
-obj/boot/main.o: boot/main.c inc/x86.h inc/types.h inc/elf.h
+obj/boot/main.o: boot/main.c /usr/include/stdc-predef.h
