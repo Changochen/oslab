@@ -57,7 +57,7 @@ seta20.2:
   orl     $CR0_PE_ON, %eax
   movl    %eax, %cr0
   
-  # Jump to next instruction, but in 32-bit code segment.
+  # Jump to next instuction, but in 32-bit code segment.
   # Switches processor into 32-bit mode.
   ljmp    $PROT_MODE_CSEG, $protcseg
 
@@ -77,7 +77,7 @@ protcseg:
 
   # If bootmain returns (it shouldn't), loop.
 spin:
-  jmp spin
+  #jmp spin
 
 # Bootstrap GDT
 .p2align 2                                # force 4 byte alignment
