@@ -2,12 +2,12 @@ BOOT   := boot.bin
 KERNEL := kernel.bin
 IMAGE  := disk.bin
 
-CC      := gcc
-LD      := ld
+CC	  := gcc
+LD	  := ld
 OBJCOPY := objcopy
-DD      := dd
-QEMU    := qemu-system-i386
-GDB     := gdb
+DD	  := dd
+QEMU	:= qemu-system-i386
+GDB	 := gdb
 
 CFLAGS := -Wall -Werror -Wfatal-errors #开启所有警告, 视警告为错误, 第一个错误结束编译
 CFLAGS += -MD #生成依赖文件
@@ -22,17 +22,19 @@ QEMU_OPTIONS := -serial stdio #以标准输入输为串口(COM1)
 QEMU_OPTIONS += -d int #输出中断信息
 QEMU_OPTIONS += -monitor telnet:127.0.0.1:1111,server,nowait #telnet monitor
 
+QEMU_RUN_OPTIONS := -serial stdio #以标准输入输为串口(COM1)
+
 QEMU_DEBUG_OPTIONS := -S #启动不执行
 QEMU_DEBUG_OPTIONS += -s #GDB调试服务器: 127.0.0.1:1234
 
 GDB_OPTIONS := -ex "target remote 127.0.0.1:1234"
 GDB_OPTIONS += -ex "symbol $(KERNEL)"
 
-OBJ_DIR        := obj
-LIB_DIR        := lib
-BOOT_DIR       := boot
-KERNEL_DIR     := kernel
-OBJ_LIB_DIR    := $(OBJ_DIR)/$(LIB_DIR)
+OBJ_DIR		:= obj
+LIB_DIR		:= lib
+BOOT_DIR	   := boot
+KERNEL_DIR	 := kernel
+OBJ_LIB_DIR	:= $(OBJ_DIR)/$(LIB_DIR)
 OBJ_BOOT_DIR   := $(OBJ_DIR)/$(BOOT_DIR)
 OBJ_KERNEL_DIR := $(OBJ_DIR)/$(KERNEL_DIR)
 
@@ -47,13 +49,13 @@ BOOT_O := $(BOOT_S:%.S=$(OBJ_DIR)/%.o)
 BOOT_O += $(BOOT_C:%.c=$(OBJ_DIR)/%.o)
 
 KERNEL_C := $(shell find $(KERNEL_DIR) -name "*.c")
-KERNEL_S := $(wildcard $(KERNEL_DIR)/*.S)
+KERNEL_S := $(shell find $(KERNEL_DIR) -name "*.S")
 KERNEL_O := $(KERNEL_C:%.c=$(OBJ_DIR)/%.o)
 KERNEL_O += $(KERNEL_S:%.S=$(OBJ_DIR)/%.o)
 
 $(IMAGE): $(BOOT) $(KERNEL)
-	@$(DD) if=/dev/zero of=$(IMAGE) count=10000         > /dev/null # 准备磁盘文件
-	@$(DD) if=$(BOOT) of=$(IMAGE) conv=notrunc          > /dev/null # 填充 boot loader
+	@$(DD) if=/dev/zero of=$(IMAGE) count=10000		 > /dev/null # 准备磁盘文件
+	@$(DD) if=$(BOOT) of=$(IMAGE) conv=notrunc		  > /dev/null # 填充 boot loader
 	@$(DD) if=$(KERNEL) of=$(IMAGE) seek=1 conv=notrunc > /dev/null # 填充 kernel, 跨过 mbr
 
 $(BOOT): $(BOOT_O)
@@ -90,6 +92,9 @@ DEPS := $(shell find -name "*.d")
 qemu: $(IMAGE)
 	$(QEMU) $(QEMU_OPTIONS) $(IMAGE)
 
+run: $(IMAGE)
+	$(QEMU) $(QEMU_RUN_OPTIONS) $(IMAGE)
+
 # Faster, but not suitable for debugging
 qemu-kvm: $(IMAGE)
 	$(QEMU) $(QEMU_OPTIONS) --enable-kvm $(IMAGE)
@@ -102,6 +107,6 @@ gdb:
 
 clean:
 	@rm -rf $(OBJ_DIR) 2> /dev/null
-	@rm -rf $(BOOT)    2> /dev/null
+	@rm -rf $(BOOT)	2> /dev/null
 	@rm -rf $(KERNEL)  2> /dev/null
 	@rm -rf $(IMAGE)   2> /dev/null

@@ -6,8 +6,7 @@
 #endif
 
 // Represents true-or-false values
-typedef _Bool bool;
-enum { false, true };
+typedef int bool;
 
 // Explicitly-sized versions of integer types
 typedef __signed char int8_t;
@@ -66,8 +65,6 @@ typedef int32_t off_t;
 	uint32_t __n = (uint32_t) (n);				\
 	(typeof(a)) (ROUNDDOWN((uint32_t) (a) + __n - 1, __n));	\
 })
-
-#define ARRAY_SIZE(a)	(sizeof(a) / sizeof(a[0]))
 
 // Return the offset of 'member' relative to the beginning of a struct type
 #define offsetof(type, member)  ((size_t) (&((type*)0)->member))
