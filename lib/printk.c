@@ -25,7 +25,6 @@ void vfprintf(void (*printer)(char), const char *ctl, void **args) {
 	int32_t i = 0;
 	int32_t type = NONE;
 	void** pointer = args;
-	//char last='\0';
 	for(;*str != '\0'; str ++){
 		if(cur == '%'){
 			type = READ;

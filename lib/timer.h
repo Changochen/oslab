@@ -7,6 +7,7 @@
 #define PIT_FREQUENCE 1193182
 #define HZ 100
 
+
 union CmdByte {
   struct {
     uint8_t present_mode : 1;
