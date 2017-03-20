@@ -1,6 +1,9 @@
 #include<lib/video.h>
 #include<inc/string.h>
 #include<lib/random.h>
+#include<lib/blocklist.h>
+
+int gameState=0;
 uint8_t Frame[320*200];
 int x,y;
 int num=0;
@@ -9,7 +12,6 @@ void drawFrame(){
     memcpy(VGAP,Frame,VGA_SIZ);
 }
 
-int randomBlock[1000][2];
 uint8_t K[10];
 
 void drawBlock(int x,int y,uint8_t color){
@@ -21,67 +23,82 @@ void drawBlock(int x,int y,uint8_t color){
     }
 }
 
+int get_gameState(){
+    return gameState;
+}
+
 void initVideo(uint8_t color){
+    for(int i=0;i<VGA_SIZ;i++){
+        VGAP[i]=0xFF;
+    }
+    gameState=1;
     x=190;
     y=150;
     for(int i=0;i<10;i++){
         K[i]=color;
     }
-    drawBlock(0,0,MBCOLOR);
+    init_list();
+    drawBlock(x,y,MBCOLOR);
 }
 
 void addBlock(){
-    randomBlock[num][0]=0;
-    randomBlock[num][1]=(rand()%32)*10;
-    num++;
+    add(0,(rand()%32)*10);
 }
 
 void randomMove(){
-    int index=0;
-    for(int i=num;i>0;i--){
-        while(1){
-            if(randomBlock[index][1]!=-1){
-                moveBlock(&randomBlock[index][0],&randomBlock[index][1],DOWN,0x23);
-                if(randomBlock[index][1]==190){
-                    randomBlock[index][1]=-1;
-                    drawBlock(randomBlock[index][0],randomBlock[index][1],0xFF);
-                    num--;
-                }else{
-                    moveBlock(&randomBlock[index][0],&randomBlock[index][1],rand()%2+1,BCOLOR);
-                }
-                index++;
-                break;
-            }
+    NODE* head=get_head();
+    while (head!=NULL){
+        if(head->x==190){
+            drawBlock(head->x, head->y, 0xFF);
+            head=del(head);
+            continue;
         }
+        else
+        {
+            moveBlock(&head->x, &head->y, DOWN, 0x23,1);
+            moveBlock(&head->x, &head->y, rand() % 2 + 1, BCOLOR,1);
+        }
+    head=head->next;
     }
 }
-void moveBlock(int* nx,int* ny,int direction,uint8_t color){
-    drawBlock(*nx,*ny,0xFF);
-    switch(direction){
+
+void moveBlock(int *nx, int *ny, int direction, uint8_t color,int which)
+{
+    drawBlock(*nx, *ny, 0xFF);
+    switch (direction)
+    {
         case UP:
-            if(*nx!=0){
-                *nx-=10;
+            if (*nx != 0)
+            {
+                *nx -= 10;
             }
             break;
         case DOWN:
-            if(*nx!=190){
-                *nx+=10;
+            if (*nx != 190)
+            {
+                *nx += 10;
             }
             break;
         case RIGHT:
-            if(*ny!=310){
-                *ny+=10;
+            if (*ny != 310)
+            {
+                *ny += 10;
             }
             break;
         case LEFT:
-            if(*ny!=0){
-                *ny-=10;
+            if (*ny != 0)
+            {
+                *ny -= 10;
             }
             break;
     }
-    drawBlock(*nx,*ny,color);
+    if((which==1&&VGAP[(*nx)*320+*ny]==MBCOLOR)||(which==0&&VGAP[(*nx)*320+*ny]==BCOLOR)){
+        gameState=0;
+    }
+    drawBlock(*nx, *ny, color);
 }
 
-void move(int direction){
-    moveBlock(&x,&y,direction,MBCOLOR);
+void move(int direction)
+{
+    moveBlock(&x, &y, direction, MBCOLOR,0);
 }

@@ -11,4 +11,5 @@ void drawFrame();
 void move(int);
 void randomMove();
 void addBlock();
-void moveBlock(int*,int*,int,uint8_t);
+void moveBlock(int*,int*,int,uint8_t,int);
+int get_gameState();
