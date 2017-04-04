@@ -110,3 +110,6 @@ clean:
 	@rm -rf $(BOOT)	2> /dev/null
 	@rm -rf $(KERNEL)  2> /dev/null
 	@rm -rf $(IMAGE)   2> /dev/null
+
+submit: clean
+	tar -vcpzf  ../151220012.tgz ../oslab
