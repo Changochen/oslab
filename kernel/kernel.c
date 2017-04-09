@@ -57,7 +57,7 @@ int main(){
         disable_interrupt();
         enable_interrupt();
     }
-    printk("LOSE!You live for %d seconds\n",counter3/100);
+    printf("LOSE!You live for %d seconds\n",counter3/100);
     disable_interrupt();
     while(1);
     return 1;

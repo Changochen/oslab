@@ -1,5 +1,5 @@
 
 
-int main(){
-    printf("Game start!\n");
-}
+//int main(){
+    //printf("Game start!\n");
+//}
