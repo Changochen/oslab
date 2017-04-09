@@ -6,59 +6,66 @@
 #include <lib/irq.h>
 #include <lib/video.h>
 
-int counter=0;
-int counter2=0;
-int counter3=0;
+
+#include "inc/elf.h"
+#include "inc/disk.h"
+#include "inc/types.h"
+/*
 void press(int code){
     switch(code){
         case 30:    //A
-            printk("A\n");
+            printf("A\n");
             move(LEFT);
             break;
         case 31:    //S
-            printk("S\n");
+            printf("S\n");
             move(DOWN);
             break;
         case 32:    //D
-            printk("D\n");
+            printf("D\n");
             move(RIGHT);
             break;
         case 17:    //W
-            printk("W\n");
+            printf("W\n");
             move(UP);
             break;
     }
 }
-void timer(){
-    if(counter==20){
-        addBlock();
-        counter=0;
-    }
-    if(counter2==10){
-        randomMove();
-        counter2=0;
-    }
-    counter++;
-    counter2++;
-    counter3++;
-    drawFrame();
-}
+*/
+#define elf   ((struct ELFHeader *) 102400)
+extern void init_segment();
+void nothing(){}
+void nothing2(int k){}
 int main(){
+    init_segment();
 	init_serial();
 	init_timer();
 	init_idt();
 	init_intr();
-	set_keyboard_intr_handler(press);
-	set_timer_intr_handler(timer);
-	enable_interrupt();
-    initVideo(0xFF);
-    while(get_gameState()==1){
-        wait_for_interrupt();
-        disable_interrupt();
-        enable_interrupt();
-    }
-    printf("LOSE!You live for %d seconds\n",counter3/100);
-    disable_interrupt();
-    while(1);
-    return 1;
+	set_keyboard_intr_handler(nothing2);
+	//set_timer_intr_handler(nothing);
+
+
+  struct ProgramHeader *ph, *eph;
+  unsigned char* pa, *i;
+
+  readseg((unsigned char*)elf, 8*SECTSIZE, 102400);
+
+  printf("Magic Assertion: %x\n", (elf->magic == 0x464C457FU));
+
+
+  ph = (struct ProgramHeader*)((char *)elf + elf->phoff);
+  eph = ph + elf->phnum;
+  for(; ph < eph; ph ++) {
+    pa = (unsigned char*)ph->paddr; 
+    readseg(pa, ph->filesz, 102400+ph->off); 
+    for (i = pa + ph->filesz; i < pa + ph->memsz; *i ++ = 0);
+  }
+  printf("THe\n");
+  enable_interrupt();
+ ((void(*)(void))elf->entry)();
+  printf("%s\n", "Never return otherwise you are fucked!");
+  while(1){
+  }
+  return 1;
 };

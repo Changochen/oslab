@@ -6,7 +6,7 @@
 #define DPL_KERNEL              0
 #define DPL_USER                3
 
-#define NR_SEGMENTS             3
+//#define NR_SEGMENTS             3
 #define SEG_KERNEL_CODE         1 
 #define SEG_KERNEL_DATA         2
 
@@ -24,6 +24,7 @@ struct GateDescriptor {
 struct TrapFrame {
 	uint32_t edi, esi, ebp, xxx, ebx, edx, ecx, eax;
 	int32_t irq;
+	uint32_t err;
 };
 
 static inline void
@@ -201,6 +202,18 @@ lidt(void *p)
 	__asm __volatile("lidt (%0)" : : "r" (p));
 }
 
+static inline void
+write_tr(uint16_t selector) {
+	asm volatile("ltr %0" : : "r"(selector));
+}
+static inline void
+write_gdtr(void *addr, uint32_t size) {
+	static volatile uint16_t data[3];
+	data[0] = size - 1;
+	data[1] = (uint32_t)addr;
+	data[2] = ((uint32_t)addr) >> 16;
+	asm volatile("lgdt (%0)" : : "r"(data));
+}
 static __inline void
 lgdt(void *p)
 {

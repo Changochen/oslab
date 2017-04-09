@@ -6,15 +6,15 @@
 #include <lib/syscall.h>
 
 extern timer_handler timer_handlers[TIMER_HANDLERS_MAX];
-extern uint32_t tick();
+extern uint32_t get_tick();
 
 void do_syscall(struct TrapFrame *tf) {
 	//int i;
 	switch(tf->eax) {
+		/*
 		case SYS_PRINT_CHAR:
 			serial_printc(tf->ebx);
 		break;
-		/*
 		case SYS_INIT_CACHE:
 			initVCache();
 		break;
@@ -31,9 +31,11 @@ void do_syscall(struct TrapFrame *tf) {
 		case SYS_GET_KEY:
 			tf->eax = get_key(tf->ebx);
 		break;
-		case SYS_GET_TICK:
-			tf->eax = tick();
+		*/
+		case 4000:
+			tf->eax = get_tick();
 		break;
+		/*
 		case SYS_ADD_TIMER:
 			for(i=0;i<TIMER_HANDLERS_MAX;i++){
 				if(!timer_handlers[i].used){
