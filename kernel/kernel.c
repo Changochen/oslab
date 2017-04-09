@@ -61,7 +61,6 @@ int main(){
     readseg(pa, ph->filesz, 102400+ph->off); 
     for (i = pa + ph->filesz; i < pa + ph->memsz; *i ++ = 0);
   }
-  printf("THe\n");
   enable_interrupt();
  ((void(*)(void))elf->entry)();
   printf("%s\n", "Never return otherwise you are fucked!");

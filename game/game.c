@@ -16,6 +16,7 @@ unsigned int counter2=0;
 unsigned int counter3=0;
 
 void press(int code){
+    printf("sdf\n");
     switch(code){
         case 30:    //A
             printf("A\n");
@@ -55,6 +56,13 @@ unsigned int my_get_tick(){
     asm volatile("int $0X80": "=a"(t) : "a"(4000));
     return t;
 }
+
+char my_key_down(char s){
+	char r_eax = 0;
+	asm volatile("int $0x80": : "a"(4001), "b"(s));
+	asm volatile("movl %%eax, %0\n" : : "m"(r_eax));
+	return r_eax;
+}
 int main(){
     printf("game start!\n");
     initVideo(0xFF);
@@ -65,6 +73,14 @@ int main(){
         if(old_time<temp){
             old_time=temp;
             timer();
+        int a=my_key_down('a');
+        int s=my_key_down('s');
+        int w=my_key_down('w');
+        int d=my_key_down('d');
+        if(a)press(30);
+        else if(s)press(31);
+        else if(w)press(17);
+        else if(d)press(32);
         }
         if(get_gameState()!=1)flag=0;
     }

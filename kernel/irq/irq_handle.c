@@ -12,7 +12,7 @@ void
 set_keyboard_intr_handler( void (*ptr)(int) ) {
 	do_keyboard = ptr;
 }
-extern void press();
+extern void press_key();
 extern void do_timer();
 void do_syscall(struct TrapFrame *);
 /* TrapFrame的定义在include/x86/memory.h
@@ -40,9 +40,7 @@ irq_handle(struct TrapFrame *tf) {
 		uint32_t val = inb(0x61);
 		outb(0x61, val | 0x80);
 		outb(0x61, val);
-		//serial_printc('k');
-		//do_keyboard(code);
-		press(code);
+		press_key(code);
 	} else {
 
 	}

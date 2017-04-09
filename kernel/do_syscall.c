@@ -7,6 +7,7 @@
 
 extern timer_handler timer_handlers[TIMER_HANDLERS_MAX];
 extern uint32_t get_tick();
+extern int8_t get_key(char s);
 
 void do_syscall(struct TrapFrame *tf) {
 	//int i;
@@ -34,6 +35,9 @@ void do_syscall(struct TrapFrame *tf) {
 		*/
 		case 4000:
 			tf->eax = get_tick();
+		break;
+		case 4001:
+			tf->eax = get_key(tf->ebx);
 		break;
 		/*
 		case SYS_ADD_TIMER:
