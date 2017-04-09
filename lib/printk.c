@@ -115,7 +115,7 @@ void vfprintf(void (*printer)(char), const char *ctl, void **args) {
 }
 
 void __attribute__((__noinline__)) 
-printk(const char *ctl, ...) {
+printf(const char *ctl, ...) {
 	void **args = (void **)&ctl + 1;
 	vfprintf(serial_printc, ctl, args);
 }

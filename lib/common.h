@@ -4,5 +4,5 @@
 #include "inc/types.h"
 #include "inc/x86.h"
 
-void printk(const char *ctl, ...);
+void __attribute__((__noinline__))  printf(const char *ctl, ...);
 #endif
