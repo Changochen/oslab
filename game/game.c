@@ -1,5 +1,5 @@
+#include <lib/syscall.h>
 #include <lib/common.h>
-
 #include <lib/serial.h>
 #include <lib/i8259.h>
 #include <lib/timer.h>
@@ -51,11 +51,6 @@ void timer(){
     counter3++;
     drawFrame();
 }
-unsigned int my_get_tick(){
-    uint32_t t;
-    asm volatile("int $0X80": "=a"(t) : "a"(4000));
-    return t;
-}
 
 char my_key_down(char s){
 	char r_eax = 0;
@@ -69,7 +64,7 @@ int main(){
     int flag=1;
     uint32_t old_time=0;
     while(flag){
-        unsigned int temp=my_get_tick();
+        unsigned int temp=system_get_tick();
         if(old_time<temp){
             old_time=temp;
             timer();

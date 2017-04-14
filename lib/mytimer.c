@@ -5,7 +5,6 @@ void do_timer(){
     ticks++;
 }
 
-
 unsigned int get_tick(){
     return ticks;
 }

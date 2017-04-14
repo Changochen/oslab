@@ -6,7 +6,6 @@
 static void (*do_keyboard)(int);
 void
 set_timer_intr_handler( void (*ptr)(void) ) {
-	//do_timer = ptr;
 }
 void
 set_keyboard_intr_handler( void (*ptr)(int) ) {
@@ -34,7 +33,6 @@ irq_handle(struct TrapFrame *tf) {
 	}
 	else if (tf->irq == 1000) {
 		do_timer();
-		//printf("%d\n",get_tick());
 	} else if (tf->irq == 1001) {
 		uint32_t code = inb(0x60);
 		uint32_t val = inb(0x61);
