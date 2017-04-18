@@ -2,6 +2,7 @@
 #include<inc/string.h>
 #include<lib/random.h>
 #include<lib/blocklist.h>
+#include<lib/syscall.h>
 
 int gameState=0;
 uint8_t Frame[320*200];
@@ -9,17 +10,15 @@ int x,y;
 int num=0;
 uint8_t* VGAP=(uint8_t*)0xa0000;
 void drawFrame(){
-    memcpy(VGAP,Frame,VGA_SIZ);
+    system_draw_frame();
 }
 
 uint8_t K[10];
 
 void drawBlock(int x,int y,uint8_t color){
     for(int i=0;i<10;i++){
-        K[i]=color;
-    }
-    for(int i=0;i<10;i++){
-        memcpy((Frame+(x+i)*320+y),K,10);
+    //memcpy((Frame+(x+i)*320+y),K,10);
+        system_draw_line(x+i,y,9,color);
     }
 }
 
@@ -28,8 +27,10 @@ int get_gameState(){
 }
 
 void initVideo(uint8_t color){
-    for(int i=0;i<VGA_SIZ;i++){
-        VGAP[i]=0xFF;
+    for(int i=0;i<320;i++){
+        for(int j=0;j<200;j++){
+            system_draw_point(j,i,0xff);
+        }
     }
     gameState=1;
     x=190;
@@ -92,7 +93,7 @@ void moveBlock(int *nx, int *ny, int direction, uint8_t color,int which)
             }
             break;
     }
-    if((which==1&&VGAP[(*nx)*320+*ny]==MBCOLOR)||(which==0&&VGAP[(*nx)*320+*ny]==BCOLOR)){
+    if((which==1&&(system_get_point(*nx,*ny)==MBCOLOR))||(which==0&&(system_get_point(*nx,*ny)==BCOLOR))){
         gameState=0;
     }
     drawBlock(*nx, *ny, color);

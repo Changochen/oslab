@@ -10,18 +10,23 @@
 #define SYS_DRAW_POINT  4002
 #define SYS_DRAW_LINE	4003
 #define SYS_DRAW_FRAME	4004
-
+#define SYS_GET_POINT   4005
 #define TIMER_HANDLERS_MAX 100
 
 
 unsigned int system_get_tick();
 char system_get_key(char);
-void system_draw_point(int x,int y,int color);
-void system_draw_line(int bx,int by,int ex,int ey,int color);
+int system_draw_point(int x,int y,int color);
+int system_draw_line(int bx,int by,int ey,int color);
 void system_draw_frame();
+int __draw_point(int x,int y,int color);
+int __draw_line(int bx,int by,int ey,int color);
+void __draw_frame();
+char system_get_point(int,int);
+char __get_point(int,int);
 typedef struct timer_handler{
-	void (*ptr)(void);
-	int used;
+    void (*ptr)(void);
+    int used;
 
 }timer_handler;
 #endif
