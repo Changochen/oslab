@@ -3,12 +3,12 @@
 #include<lib/random.h>
 #include<lib/blocklist.h>
 #include<lib/syscall.h>
-
+#include<lib/common.h>
 int gameState=0;
-uint8_t Frame[320*200];
+//uint8_t Frame[320*200];
 int x,y;
 int num=0;
-uint8_t* VGAP=(uint8_t*)0xa0000;
+//uint8_t* VGAP=(uint8_t*)0xa0000;
 void drawFrame(){
     system_draw_frame();
 }
@@ -17,8 +17,10 @@ uint8_t K[10];
 
 void drawBlock(int x,int y,uint8_t color){
     for(int i=0;i<10;i++){
-    //memcpy((Frame+(x+i)*320+y),K,10);
-        system_draw_line(x+i,y,9,color);
+        int k=system_draw_line(x+i,y,y+9,color);
+        if(k==-1){
+            printf("draw failed!x:%d,y:%d\n",x+i,y);
+        }
     }
 }
 

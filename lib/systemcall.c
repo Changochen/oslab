@@ -7,7 +7,7 @@ uint8_t* VGAP=(uint8_t*)0xa0000;
 uint8_t Frame[320*200];
 unsigned int system_get_tick(){
     uint32_t t;
-    asm volatile("int $0X80": "=a"(t) : "a"(SYS_GET_TICK));
+    asm volatile("int $0x80": "=a"(t) : "a"(SYS_GET_TICK));
     return t;
 }
 
@@ -39,18 +39,18 @@ void __draw_frame(){
 
 int system_draw_point(int x,int y,int color){
     int res=0;
-    asm volatile("int $0X80": "=a"(res) : "a"(SYS_DRAW_POINT),"b"(x),"c"(y),"d"(color));
+    asm volatile("int $0x80": "=a"(res) : "a"(SYS_DRAW_POINT),"b"(x),"c"(y),"d"(color));
     return res;
 }
 
 int system_draw_line(int bx,int by,int ey,int color){
     int res=0;
-    asm volatile("int $0X80": "=a"(res) : "a"(SYS_DRAW_LINE),"b"(bx),"c"((by<<16)+ey),"d"(color));
+    asm volatile("int $0x80": "=a"(res) : "a"(SYS_DRAW_LINE),"b"(bx),"c"((by<<16)+ey),"d"(color));
     return res;
 }
 
 void system_draw_frame(){
-    asm volatile("int $0X80":: "a"(SYS_DRAW_FRAME));
+    asm volatile("int $0x80":: "a"(SYS_DRAW_FRAME));
 }
 
 char __get_point(int x,int y){
@@ -58,7 +58,7 @@ char __get_point(int x,int y){
 }
 char system_get_point(int x,int y){
     int res=0;
-    asm volatile("int 0X80":"=a"(res):"a"(SYS_GET_POINT),"b"(x),"c"(y));//????
+    asm volatile("int $0x80":"=a"(res):"a"(SYS_GET_POINT),"b"(x),"c"(y));//????
     return res&0xFF;
 }
 
