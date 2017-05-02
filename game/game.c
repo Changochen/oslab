@@ -16,22 +16,21 @@ unsigned int counter2=0;
 unsigned int counter3=0;
 
 void press(int code){
-    printf("sdf\n");
     switch(code){
         case 30:    //A
-            printf("A\n");
+           // printf("A\n");
             move(LEFT);
             break;
         case 31:    //S
-            printf("S\n");
+            //printf("S\n");
             move(DOWN);
             break;
         case 32:    //D
-            printf("D\n");
+           // printf("D\n");
             move(RIGHT);
             break;
         case 17:    //W
-            printf("W\n");
+            //printf("W\n");
             move(UP);
             break;
     }
@@ -68,14 +67,14 @@ int main(){
         if(old_time<temp){
             old_time=temp;
             timer();
-        int a=my_key_down('a');
-        int s=my_key_down('s');
-        int w=my_key_down('w');
-        int d=my_key_down('d');
-        if(a)press(30);
-        else if(s)press(31);
-        else if(w)press(17);
-        else if(d)press(32);
+            int a=my_key_down('a');
+            int s=my_key_down('s');
+            int w=my_key_down('w');
+            int d=my_key_down('d');
+            if(a)press(30);
+            else if(s)press(31);
+            else if(w)press(17);
+            else if(d)press(32);
         }
         if(get_gameState()!=1)flag=0;
     }

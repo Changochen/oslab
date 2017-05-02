@@ -3,18 +3,20 @@
 //#include "process.h"
 #include "inc/memory.h"
 #include "inc/string.h"
+#include "inc/process.h"
+#include "inc/pmap.h"
 
-/* This source file involves some hardware details. Please refer to 
- *  _ ____   ___    __    __  __                         _ 
+/* This source file involves some hardware details. Please refer to
+ *  _ ____   ___    __    __  __                         _
  * (_)___ \ / _ \  / /   |  \/  |                       | |
  *  _  __) | (_) |/ /_   | \  / | __ _ _ __  _   _  __ _| |
  * | ||__ < > _ <| '_ \  | |\/| |/ _` | '_ \| | | |/ _` | |
  * | |___) | (_) | (_) | | |  | | (_| | | | | |_| | (_| | |
  * |_|____/ \___/ \___/  |_|  |_|\__,_|_| |_|\__,_|\__,_|_|
- */                                                               
+ */
 
 /* One TSS will be enough for all processes in ring 3. It will be used in Lab3. */
-static TSS tss; 
+static TSS tss;
 
 static void set_tss(SegDesc *ptr) {
 	tss.ss0 = SELECTOR_KERNEL(SEG_KERNEL_DATA);		// only one ring 0 stack segment
@@ -35,7 +37,6 @@ static void set_tss(SegDesc *ptr) {
 	ptr->granularity = 0;
 	ptr->base_31_24  = base >> 24;
 }
-
 
 /* GDT in the kernel's memory, whose virtual memory is greater than 0xC0000000. */
 static SegDesc gdt[NR_SEGMENTS];
@@ -76,4 +77,29 @@ init_segment(void) {
 
 	set_tss(&gdt[SEG_TSS]);
 	write_tr( SELECTOR_USER(SEG_TSS) );
+}
+
+
+void set_tss_esp0(uint32_t esp) {
+	tss.esp0 = esp;
+}
+void pcb_enter(PCB* pcb)
+{
+    lcr3(PADDR(pcb->pgdir));
+    set_tss_esp0((uint32_t)(pcb->kern_stacktop));
+    struct TrapFrame *tf = pcb->tf;
+    asm volatile("mov %0, %%ds" : : "r"(tf->ds));
+    asm volatile("mov %0, %%es" : : "r"(tf->es));
+    asm volatile("mov %0, %%fs" : : "r"(tf->fs));
+    asm volatile("mov %0, %%gs" : : "r"(tf->gs));
+    asm volatile("pushl %0" : : "r"((uint32_t)tf->ss));
+    asm volatile("pushl %0" : : "r"(tf->esp));
+    asm volatile("pushl %0" : : "r"(tf->eflags));
+    asm volatile("pushl %0" : : "r"((uint32_t)tf->cs));
+    asm volatile("pushl %0" : : "r"(tf->eip));
+    asm volatile("iret");
+}
+
+void init_page(void) {
+    page_init();
 }

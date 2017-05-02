@@ -22,9 +22,14 @@ struct GateDescriptor {
 };
 
 struct TrapFrame {
-	uint32_t edi, esi, ebp, xxx, ebx, edx, ecx, eax;
-	int32_t irq;
-	uint32_t err;
+	uint32_t edi, esi, ebp, save_esp, ebx, edx, ecx, eax;
+	uint32_t gs, fs, es, ds;
+	int irq;
+	uint32_t err,eip;
+	uint16_t cs,pad;
+	uint32_t eflags;
+	uint32_t esp;
+	uint16_t ss,pad2;
 };
 
 static inline void

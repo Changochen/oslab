@@ -17,7 +17,6 @@ int8_t get_lastkey(){
 }
 void press_key(int code){
 	int i=0;
-	//printk("haha\n");
 	if((code & 0x80) == 0){
 		for(;i<26;i++){
 			if(letter[i]==code){
