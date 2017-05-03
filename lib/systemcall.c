@@ -58,7 +58,20 @@ char __get_point(int x,int y){
 }
 char system_get_point(int x,int y){
     int res=0;
-    asm volatile("int $0x80":"=a"(res):"a"(SYS_GET_POINT),"b"(x),"c"(y));//????
+    asm volatile("int $0x80":"=a"(res):"a"(SYS_GET_POINT),"b"(x),"c"(y));
     return res&0xFF;
 }
 
+void system_yield(){
+    asm volatile("int $0x80"::"a"(SYS_YIELD));
+}
+
+void system_sleep(uint32_t sec){
+    asm volatile("int $0x80"::"a"(SYS_SLEEP),"b"(sec));
+}
+
+uint32_t system_getpid(){
+    uint32_t res;
+    asm volatile("int $0x80":"=a"(res):"a"(SYS_GETPID));
+    return res;
+}

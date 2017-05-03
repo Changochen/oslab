@@ -2,6 +2,7 @@
 //#include "lib/mytimer.h"
 #include <lib/serial.h>
 #include <lib/video.h>
+#include <lib/syscall.h>
 //static void (*do_timer)(void);
 static void (*do_keyboard)(int);
 void
@@ -13,6 +14,7 @@ set_keyboard_intr_handler( void (*ptr)(int) ) {
 }
 extern void press_key();
 extern void do_timer();
+//extern void schedule();
 void do_syscall(struct TrapFrame *);
 /* TrapFrame的定义在include/x86/memory.h
  * 请仔细理解这段程序的含义，这些内容将在后续的实验中被反复使用。 */
@@ -23,7 +25,7 @@ irq_handle(struct TrapFrame *tf) {
 			//printk("%s, %d: Unhandled exception!\n", __FUNCTION__, __LINE__);
 		}
 		else {
-			//printk("%s, %d: Unexpected exception #%d!\n", __FUNCTION__, __LINE__, tf->irq);
+		//printf("%s, %d: Unexpected exception #%d!\n", __FUNCTION__, __LINE__, tf->irq);
 		}
 	}
 
@@ -39,7 +41,6 @@ irq_handle(struct TrapFrame *tf) {
 		outb(0x61, val);
 		press_key(code);
 	} else {
-
 	}
 }
 

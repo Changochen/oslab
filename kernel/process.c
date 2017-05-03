@@ -8,39 +8,33 @@
 #include "inc/pmap.h"
 #include "inc/elf.h"
 #include "inc/disk.h"
-#define ELFADDR 0x0
+#define ELFADDR 0
 #define elf   ((struct ELFHeader *) ELFADDR)
 
+
 uint32_t entry;
-uint8_t elf_t[1000];
 PCB PCBPool[MAXPROCESS];
 struct TrapFrame tfPool[MAXPROCESS];
 uint32_t pid=0;
 
 PCB* cur_pcb = NULL,*ready_l = NULL,*block_l= NULL;
 
-/*struct TrapFrame {
-//uint32_t esi, ebx, eax, eip, edx, error_code, eflags, ecx, cs, old_esp, edi, ebp;
-uint32_t edi, esi, ebp, old_esp, ebx, edx, ecx, eax;
-//uint32_t gs, fs, es, ds;
-int32_t irq;
-uint32_t error_code, eip, cs, eflags;
-//uint32_t esp;
-};*/
-
 uint32_t pcb_num(PCB* head){
     uint32_t num = 0;
     PCB* p = head;
     while(p){
+        //printf("id:%d\n",p->pid);
         p = p->next;
         num++;
     }
     return num;
 }
 
-PCB* pcb_pop(PCB* head){
-    PCB* p = head;
-    pcb_del(head, p);
+PCB* pcb_pop(PCB** head){
+    PCB* p = *head;
+    *head=(*head)->next;
+    p->next=NULL;
+    //pcb_del(head, p);
     return p;
 }
 
@@ -56,7 +50,7 @@ int pcb_push(PCB* head, PCB* p){
     }
 }
 int pcb_enqeque(PCB* head, PCB* p){
-    //	p->next = NULL;
+    /*
     if(head == NULL){
         head = p;
         return 0;
@@ -66,7 +60,23 @@ int pcb_enqeque(PCB* head, PCB* p){
             temp = temp->next;
         }
         temp->next = p;
+        p->next=NULL;
         return 1;
+    }
+    */
+    PCB* h = head;
+    p->next = NULL;
+    if(h == NULL){
+        head = p;
+        return 0;
+
+    }else{
+        while(h->next){
+            h = h->next;
+        }
+        h->next = p;
+        return 1;
+
     }
 }
 int pcb_del(PCB* head, PCB* p){
@@ -75,6 +85,7 @@ int pcb_del(PCB* head, PCB* p){
     }
     if(head==p){
         head=head->next;
+        p->next=NULL;
     }else{
         PCB* temp=head;
         while((temp!=NULL)&&(temp->next!=p))temp=temp->next;
@@ -103,7 +114,7 @@ int pcb_del(PCB* head, PCB* p){
        pre->next = sleep->next;
        sleep->next = NULL;
        return 1;
-       */
+    */
 }
 
 void pcb_pool_init()
@@ -126,7 +137,7 @@ void pcb_init(PCB *p, uint32_t ustack, uint32_t entry, uint8_t pri)
         tf->ds = tf->es = tf->ss = tf->fs = tf->gs = GD_UD | 3;
         tf->cs = GD_UT | 3;
     }
-
+    printf("stack:%x,pid %d\n",ustack,p->pid);
     tf->esp = ustack;
     tf->eip = entry;
     if(pri == 0){
@@ -154,9 +165,11 @@ PCB* pcb_create()
     if (pp == NULL) return NULL;
     p->time_lapse = 0;
     p->pgdir = page2kva(pp);
+    printf("Page dir %x\n",(uint32_t)p->pgdir);
     p->pid = pid;
     pid ++;
     pp->pp_ref ++;
+    printf("kern_pgdir %x\n",kern_pgdir);
     memcpy(p->pgdir, kern_pgdir, PGSIZE);
     return p;
 }
@@ -171,33 +184,27 @@ void pcb_ready(PCB* pcb){
     }
 }
 
-void pcb_switch(PCB* pcb){
-    cur_pcb = pcb;
-    lcr3(PADDR(pcb -> pgdir));
-    pcb_enter(pcb);
-}
-
 void pcb_load(PCB* pcb, uint32_t offset){
-    struct ProgramHeader *ph, *eph;
-    unsigned char* pa, *i;
-    lcr3(PADDR(pcb -> pgdir));
+  struct ProgramHeader *ph, *eph;
+  unsigned char* pa, *i;
+  lcr3(PADDR(pcb -> pgdir));
 
-    mm_alloc(pcb->pgdir, ELFADDR, 0x1000);
-    readseg((unsigned char*)elf, 8*SECTSIZE, offset);
+  mm_alloc(pcb->pgdir, ELFADDR, 0x1000);
+  readseg((unsigned char*)elf, 8*SECTSIZE, offset);
 
-    ph = (struct ProgramHeader*)((char *)elf + elf->phoff);
-    eph = ph + elf->phnum;
+  ph = (struct ProgramHeader*)((char *)elf + elf->phoff);
+  eph = ph + elf->phnum;
 
-    for(; ph < eph; ph ++) {
-        pa = (unsigned char*)ph->paddr;
-        mm_alloc(pcb->pgdir, ph->vaddr, ph->memsz);
-        readseg(pa, ph->filesz, offset+ph->off);
-        for (i = pa + ph->filesz; i < pa + ph->memsz; *i ++ = 0);
-    }
-    entry = elf->entry;
-    mm_alloc(pcb->pgdir, USTACKTOP-USTACKSIZE, USTACKSIZE);
-    pcb_init(pcb, USTACKTOP-0x1FF, entry, 3);
-    lcr3(PADDR(kern_pgdir));
+  for(; ph < eph; ph ++) {
+    pa = (unsigned char*)ph->paddr;
+    mm_alloc(pcb->pgdir, ph->vaddr, ph->memsz);
+    readseg(pa, ph->filesz, offset+ph->off);
+    for (i = pa + ph->filesz; i < pa + ph->memsz; *i ++ = 0);
+  }
+  entry = elf->entry;
+  mm_alloc(pcb->pgdir, USTACKTOP-USTACKSIZE, USTACKSIZE);
+  pcb_init(pcb, USTACKTOP-0x1FF, entry, 0);
+  lcr3(PADDR(kern_pgdir));
 }
 
 void pcb_funcload(PCB* pcb, void* ptr){
@@ -208,16 +215,15 @@ void pcb_funcload(PCB* pcb, void* ptr){
 }
 
 
-int deg_count=0;
-
 void schedule(){
     deg_count++;
     while(1){
         if(cur_pcb==NULL){
-            cur_pcb=pcb_pop(ready_l);
+            cur_pcb=pcb_pop(&ready_l);
             cur_pcb->time_lapse=0;
             cur_pcb->ps=RUNNING;
-            pcb_switch(cur_pcb);
+            printf("switch to pid %d,\n",cur_pcb->pid);
+            scheduler_switch(cur_pcb);
             break;
         }else if(cur_pcb->ps==BLOCKED){
             pcb_enqeque(block_l,cur_pcb);

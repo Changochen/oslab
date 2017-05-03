@@ -21,30 +21,30 @@ extern pde_t *kern_pgdir;
  */
 #define PADDR(kva) _paddr(__FILE__, __LINE__, kva)
 
-static inline physaddr_t
+    static inline physaddr_t
 _paddr(const char *file, int line, void *kva)
 {
-	if ((uint32_t)kva < KERNBASE)
-		printf(file, line, "PADDR called with invalid kva 0x%x", kva);
-	return (physaddr_t)kva - KERNBASE;
+    if ((uint32_t)kva < KERNBASE)
+        printf(file, line, "PADDR called with invalid kva 0x%x", kva);
+    return (physaddr_t)kva - KERNBASE;
 }
 
 /* This macro takes a physical address and returns the corresponding kernel
  * virtual address.  It panics if you pass an invalid physical address. */
 #define KADDR(pa) _kaddr(__FILE__, __LINE__, pa)
 
-static inline void*
+    static inline void*
 _kaddr(const char *file, int line, physaddr_t pa)
 {
-	if (PGNUM(pa) >= npages)
-		printf("KADDR called with invalid pa 0x%x", pa);
-	return (void *)(pa + KERNBASE);
+    if (PGNUM(pa) >= npages)
+        printf("KADDR called with invalid pa 0x%x", pa);
+    return (void *)(pa + KERNBASE);
 }
 
 
 enum {
-	// For page_alloc, zero the returned physical page.
-	ALLOC_ZERO = 1<<0,
+    // For page_alloc, zero the returned physical page.
+    ALLOC_ZERO = 1<<0,
 };
 
 void	mem_init(void);
@@ -61,24 +61,24 @@ void	page_decref(struct PageInfo *pp);
 void	tlb_invalidate(pde_t *pgdir, void *va);
 
 
-static inline physaddr_t
+    static inline physaddr_t
 page2pa(struct PageInfo *pp)
 {
-	return (pp - pages) << PGSHIFT;
+    return (pp - pages) << PGSHIFT;
 }
 
-static inline struct PageInfo*
+    static inline struct PageInfo*
 pa2page(physaddr_t pa)
 {
-	if (PGNUM(pa) >= npages)
-		printf("pa2page called with invalid pa");
-	return &pages[PGNUM(pa)];
+    if (PGNUM(pa) >= npages)
+        printf("pa2page called with invalid pa");
+    return &pages[PGNUM(pa)];
 }
 
-static inline void*
+    static inline void*
 page2kva(struct PageInfo *pp)
 {
-	return KADDR(page2pa(pp));
+    return KADDR(page2pa(pp));
 }
 
 pte_t *pgdir_walk(pde_t *pgdir, const void *va, int create);

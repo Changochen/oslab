@@ -4,11 +4,11 @@
 #include <lib/keyboard.h>
 
 #include <lib/syscall.h>
-
+#include "inc/process.h"
 extern timer_handler timer_handlers[TIMER_HANDLERS_MAX];
 extern uint32_t get_tick();
 extern int8_t get_key(char s);
-
+extern void schedule();
 void do_syscall(struct TrapFrame *tf) {
     switch(tf->eax) {
         case SYS_GET_TICK:
@@ -28,6 +28,20 @@ void do_syscall(struct TrapFrame *tf) {
             break;
         case SYS_GET_POINT:
             tf->eax=__get_point(tf->ebx,tf->ecx);
+            break;
+        case SYS_GETPID:
+            tf->eax=cur_pcb->pid;
+            break;
+        case SYS_SLEEP:
+            cur_pcb->ps=BLOCKED;
+            cur_pcb->time_lapse=tf->ebx;
+            printf("sleep\n");
+            schedule();
+            break;
+        case SYS_YIELD:
+            cur_pcb->ps=YIELD;
+            printf("yield\n");
+            schedule();
             break;
     }
 }

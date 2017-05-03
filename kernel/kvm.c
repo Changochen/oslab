@@ -15,7 +15,6 @@
  * |_|____/ \___/ \___/  |_|  |_|\__,_|_| |_|\__,_|\__,_|_|
  */
 
-/* One TSS will be enough for all processes in ring 3. It will be used in Lab3. */
 static TSS tss;
 
 static void set_tss(SegDesc *ptr) {
@@ -38,7 +37,6 @@ static void set_tss(SegDesc *ptr) {
 	ptr->base_31_24  = base >> 24;
 }
 
-/* GDT in the kernel's memory, whose virtual memory is greater than 0xC0000000. */
 static SegDesc gdt[NR_SEGMENTS];
 
 static void
@@ -57,10 +55,6 @@ set_segment(SegDesc *ptr, uint32_t pl, uint32_t type) {
 	ptr->granularity = 1;
 	ptr->base_31_24  = 0x0;
 }
-
-/* This is similar with the one in the bootloader. However the
-   previous one cannot be accessed in user process, because its virtual
-   address below 0xC0000000, and is not in the process' address space. */
 
 void
 init_segment(void) {
@@ -86,8 +80,9 @@ void set_tss_esp0(uint32_t esp) {
 void pcb_enter(PCB* pcb)
 {
     lcr3(PADDR(pcb->pgdir));
-    set_tss_esp0((uint32_t)(pcb->kern_stacktop));
+    set_tss_esp0((uint32_t)(pcb->user_stacktop));
     struct TrapFrame *tf = pcb->tf;
+    printf("eip:%x\n",tf->eip);
     asm volatile("mov %0, %%ds" : : "r"(tf->ds));
     asm volatile("mov %0, %%es" : : "r"(tf->es));
     asm volatile("mov %0, %%fs" : : "r"(tf->fs));
@@ -102,4 +97,19 @@ void pcb_enter(PCB* pcb)
 
 void init_page(void) {
     page_init();
+}
+
+void switch_proc();
+extern PCB* cur_pcb;
+void scheduler_switch(PCB* pcb){
+    cur_pcb = pcb;
+    pcb_enter(pcb);
+    lcr3(PADDR(pcb->pgdir));
+    set_tss_esp0((uint32_t)(pcb->user_stacktop));
+    printf("seccess\n");
+    asm volatile("mov %0, %%esp" : : "r"(pcb->tf));
+    printf("seccess2\n");
+    asm volatile("jmp %0" : : "r"(switch_proc));
+    printf("seccess3\n");
+
 }

@@ -27,9 +27,6 @@ typedef struct PCB {
         pde_t *pgdir;
     };
     struct PCB *next;
-    /*
-       struct PCB *tail;
-       */
     uint8_t kern_stack[STACKSIZ];
     uint8_t kern_stacktop[16];
     uint8_t user_stack[STACKSIZ];
@@ -48,13 +45,13 @@ void pcb_enter(PCB*);
 void pcb_switch(PCB*);
 void pcb_ready(PCB*);
 
-void do_scheduler();
+void schedule();
 
 void pcb_load(PCB* pcb, uint32_t offset);
 void pcb_funcload(PCB* pcb, void* entry);
-
+void scheduler_switch(PCB*);
 uint32_t pcb_num(PCB* head);
-PCB*     pcb_pop(PCB* head);
+PCB*     pcb_pop(PCB** head);
 int      pcb_push(PCB* head, PCB* p);
 int      pcb_enqeque(PCB* head, PCB* p);
 int      pcb_del(PCB* head, PCB* p);

@@ -14,7 +14,7 @@
 #define true 1
 // These variables are set in mem_init()
 //pde_t *kern_pgdir;		// Kernel's initial page directory
-pde_t *kern_pgdir;		// Kernel's initial page directory
+pde_t *kern_pgdir=0;		// Kernel's initial page directory
 struct PageInfo pages[npages];		// Physical page state array
 static struct PageInfo *page_free_list;	// Free list of physical pages
 
@@ -40,8 +40,8 @@ void mm_alloc(pde_t *pgdir, uint32_t va, size_t len)
 
   for (i = va_start; i < va_end; i += PGSIZE) {
     p = page_alloc(0);
-    //assert(p != NULL);
     page_insert(pgdir, p, (void*)i, PTE_W | PTE_P | PTE_U);
+    printf("Page alloc:%x\n",i);
   }
 }
 
@@ -54,8 +54,8 @@ void init_kern_pgdir()
 	pde_t *pgdir = kpgdir;
 	pte_t *pgtable = kpgtable;
 
+	kern_pgdir = pgdir;
 	for (pdx = 0; pdx < (npages / NPTENTRIES); ++pdx) {
-		// pgdir[pdx] = PADDR(pgtable) | PTE_P | PTE_U | PTE_W;
 		pgdir[pdx + (KERNBASE >> PDXSHIFT)] = PADDR(pgtable) | PTE_P | PTE_W;
 		pgtable += NPTENTRIES;
 	}
@@ -67,8 +67,6 @@ void init_kern_pgdir()
 		pgtable --;
 	}
 
-	// mm_alloc(pgdir, KSTACKTOP, KSTKSIZE);
-	kern_pgdir = pgdir;
 	lcr3(PADDR(kern_pgdir));
 }
 #define SCR_WIDTH  320
