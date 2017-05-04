@@ -37,6 +37,15 @@ void __draw_frame(){
     memcpy(VGAP,Frame,VGA_SIZ);
 }
 
+char system_get_key(char c){
+    char r_eax = 0;
+    asm volatile("int $0x80":"=a"(r_eax) : "a"(SYS_GET_KEY), "b"(c));
+    return r_eax;
+}
+void system_putc(char c){
+    asm volatile("int $0x80": : "a"(SYS_PUTC), "b"(c));
+}
+
 int system_draw_point(int x,int y,int color){
     int res=0;
     asm volatile("int $0x80": "=a"(res) : "a"(SYS_DRAW_POINT),"b"(x),"c"(y),"d"(color));

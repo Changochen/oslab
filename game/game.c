@@ -17,20 +17,16 @@ unsigned int counter3=0;
 
 void press(int code){
     switch(code){
-        case 30:    //A
-           // printf("A\n");
+        case 30:
             move(LEFT);
             break;
-        case 31:    //S
-            //printf("S\n");
+        case 31:
             move(DOWN);
             break;
-        case 32:    //D
-           // printf("D\n");
+        case 32:
             move(RIGHT);
             break;
-        case 17:    //W
-            //printf("W\n");
+        case 17:
             move(UP);
             break;
     }
@@ -51,14 +47,8 @@ void timer(){
     drawFrame();
 }
 
-char my_key_down(char s){
-	char r_eax = 0;
-	asm volatile("int $0x80": : "a"(4001), "b"(s));
-	asm volatile("movl %%eax, %0\n" : : "m"(r_eax));
-	return r_eax;
-}
 int main(){
-    //printf("game start!\n");
+    printk("game start!\n");
     initVideo(0xFF);
     int flag=1;
     uint32_t old_time=0;
@@ -67,10 +57,10 @@ int main(){
         if(old_time<temp){
             old_time=temp;
             timer();
-            int a=my_key_down('a');
-            int s=my_key_down('s');
-            int w=my_key_down('w');
-            int d=my_key_down('d');
+            int a=system_get_key('a');
+            int s=system_get_key('s');
+            int w=system_get_key('w');
+            int d=system_get_key('d');
             if(a)press(30);
             else if(s)press(31);
             else if(w)press(17);
@@ -78,7 +68,7 @@ int main(){
         }
         if(get_gameState()!=1)flag=0;
     }
-    //printf("LOSE!You live for %d seconds\n",counter3/100);
+    printk("LOSE!You live for %d seconds\n",counter3/100);
     while(1);
     return 1;
 };

@@ -5,6 +5,7 @@
 #include "common.h"
 #include <stdarg.h>
 #include "lib/serial.h"
+#include "lib/syscall.h"
 #define XGET(ptr, TYPE) *((TYPE*)(ptr))
 #define XNEXT(ptr) ptr++
 extern void serial_printc(char);
@@ -118,6 +119,11 @@ void __attribute__((__noinline__))
     printf(const char *ctl, ...) {
         void **args = (void **)&ctl + 1;
         vfprintf(serial_printc, ctl, args);
+    }
+void __attribute__((__noinline__))
+    printk(const char *ctl, ...) {
+        void **args = (void **)&ctl + 1;
+        vfprintf(system_putc, ctl, args);
     }
 #undef cur
 #undef GETS

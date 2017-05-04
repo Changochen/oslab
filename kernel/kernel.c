@@ -28,7 +28,6 @@ void idle(){
 void busy(){
     uint32_t tick=0;
     while(1){
-        //``printf("This is busy! Pid %ds! Recall %d times\n", system_getpid(), tick);
         tick++;
         system_yield();
         system_sleep(system_getpid()*200);
@@ -47,13 +46,13 @@ int main(){
     printf("new beginning\n");
     PCB *pidle = pcb_create();
     pcb_funcload(pidle, idle);
-    //PCB *pcb = pcb_create();
-    //PCB *pcb2 = pcb_create();
-    //pcb_load(pcb, 102400);
-    //pcb_load(pcb2, 102400);
+    PCB *pcb = pcb_create();
+    PCB *pcb2 = pcb_create();
+    pcb_load(pcb, 102400);
+    pcb_load(pcb2, 102400);
     pcb_ready(pidle);
-    //pcb_ready(pcb);
-   // pcb_ready(pcb2);
+    pcb_ready(pcb);
+    pcb_ready(pcb2);
     uint32_t i = 0;
     for (i = 0; i < 10; i++)
     {

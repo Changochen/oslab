@@ -3,8 +3,6 @@
 
 #include "lib/common.h"
 
-#define SYS_PRINT_CHAR	1000
-
 #define SYS_GET_TICK	4000
 #define SYS_GET_KEY		4001
 #define SYS_DRAW_POINT  4002
@@ -14,6 +12,7 @@
 #define SYS_YIELD       4006
 #define SYS_SLEEP       4007
 #define SYS_GETPID      4008
+#define SYS_PUTC    	4009
 #define TIMER_HANDLERS_MAX 100
 
 
@@ -30,9 +29,11 @@ char __get_point(int,int);
 void system_yield();
 void system_sleep(uint32_t);
 uint32_t system_getpid();
+void system_putc(char c);
+
 typedef struct timer_handler{
     void (*ptr)(void);
     int used;
-
 }timer_handler;
+
 #endif

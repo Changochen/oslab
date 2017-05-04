@@ -1,20 +1,7 @@
-#define SEG_CODEDATA            1
-#define SEG_32BIT               1
-#define SEG_4KB_GRANULARITY     1
-#define SEG_TSS_32BIT           0x9
-
 #define DPL_KERNEL              0
 #define DPL_USER                3
 
-#define SEG_WRITABLE            0x2
-#define SEG_READABLE            0x2
-#define SEG_EXECUTABLE          0x8
-
-#define NR_SEGMENTS             6
-#define SEG_NULL                0 
-#define SEG_KERNEL_CODE         1 
 #define SEG_KERNEL_DATA         2
-#define SEG_USER_CODE			3 
 #define SEG_USER_DATA			4
 #define SEG_TSS					5
 
@@ -47,11 +34,12 @@
 .globl irq1;     irq1:  pushl $0;  pushl $1001; jmp asm_do_irq
 .globl irq14;   irq14:  pushl $0;  pushl $1014; jmp asm_do_irq
 .globl irq_empty;
-irq_empty:	pushl $0;  pushl   $-1; jmp asm_do_irq
-
 .globl asm_do_irq
 .extern irq_handle
 .globl switch_proc
+
+irq_empty:	pushl $0;  pushl   $-1; jmp asm_do_irq
+
 
 asm_do_irq:
 cli
@@ -77,3 +65,5 @@ popl %ds
 addl $8, %esp
 sti
 iret
+
+

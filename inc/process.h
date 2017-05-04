@@ -13,7 +13,6 @@ typedef enum{
     READY,
     RUNNING,
     BLOCKED,
-    WAITING
 }PROCESS_STATE;
 
 typedef struct PCB {
@@ -53,5 +52,7 @@ uint32_t pcb_num(PCB* head);
 PCB*     pcb_pop(PCB** head);
 int      pcb_enqeque(PCB** head, PCB* p);
 int      pcb_del(PCB** head, PCB* p);
+
+int fork();
 
 #endif

@@ -7,9 +7,7 @@
 
 #define KMEM    (16 * 1024 * 1024)
 
-/* Nanos has 128MB physical memory  */
 #define PHY_MEM   (128 * 1024 * 1024)
-			// Amount of physical memory (in pages)
 #define false 0
 #define true 1
 // These variables are set in mem_init()
