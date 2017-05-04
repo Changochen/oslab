@@ -25,7 +25,6 @@ irq_handle(struct TrapFrame *tf) {
 			//printk("%s, %d: Unhandled exception!\n", __FUNCTION__, __LINE__);
 		}
 		else {
-		//printf("%s, %d: Unexpected exception #%d!\n", __FUNCTION__, __LINE__, tf->irq);
 		}
 	}
 
@@ -34,6 +33,7 @@ irq_handle(struct TrapFrame *tf) {
 	}
 	else if (tf->irq == 1000) {
 		do_timer();
+        //schedule();
 	} else if (tf->irq == 1001) {
 		uint32_t code = inb(0x60);
 		uint32_t val = inb(0x61);
@@ -41,6 +41,7 @@ irq_handle(struct TrapFrame *tf) {
 		outb(0x61, val);
 		press_key(code);
 	} else {
+		//printf("Unexpected exception #%d!\n", tf->irq);
 	}
 }
 

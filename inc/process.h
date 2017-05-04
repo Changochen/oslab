@@ -7,7 +7,7 @@
 #define NPKSTACKTOP 0x200000
 #define NPKSTACKSIZE 2*4096
 #define MAXPROCESS 500
-#define STACKSIZ 8192
+#define STACKSIZ 8192*3
 typedef enum{
     YIELD,
     READY,
@@ -29,7 +29,7 @@ typedef struct PCB {
     struct PCB *next;
     uint8_t kern_stack[STACKSIZ];
     uint8_t kern_stacktop[16];
-    uint8_t user_stack[STACKSIZ];
+    uint8_t user_stack[USTACKSIZE];
     uint8_t user_stacktop[16];
     //uint8_t kstackprotect[0x10];
 } PCB;
@@ -42,7 +42,6 @@ void pcb_pool_init();
 void pcb_init(PCB *p, uint32_t ustack, uint32_t entry, uint8_t privilege);
 PCB* pcb_create();
 void pcb_enter(PCB*);
-void pcb_switch(PCB*);
 void pcb_ready(PCB*);
 
 void schedule();
@@ -52,7 +51,7 @@ void pcb_funcload(PCB* pcb, void* entry);
 void scheduler_switch(PCB*);
 uint32_t pcb_num(PCB* head);
 PCB*     pcb_pop(PCB** head);
-int      pcb_push(PCB* head, PCB* p);
-int      pcb_enqeque(PCB* head, PCB* p);
-int      pcb_del(PCB* head, PCB* p);
+int      pcb_enqeque(PCB** head, PCB* p);
+int      pcb_del(PCB** head, PCB* p);
+
 #endif

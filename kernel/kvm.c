@@ -103,13 +103,9 @@ void switch_proc();
 extern PCB* cur_pcb;
 void scheduler_switch(PCB* pcb){
     cur_pcb = pcb;
-    pcb_enter(pcb);
+   // pcb_enter(pcb);
     lcr3(PADDR(pcb->pgdir));
     set_tss_esp0((uint32_t)(pcb->user_stacktop));
-    printf("seccess\n");
     asm volatile("mov %0, %%esp" : : "r"(pcb->tf));
-    printf("seccess2\n");
     asm volatile("jmp %0" : : "r"(switch_proc));
-    printf("seccess3\n");
-
 }

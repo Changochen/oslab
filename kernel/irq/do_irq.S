@@ -47,35 +47,33 @@
 .globl irq1;     irq1:  pushl $0;  pushl $1001; jmp asm_do_irq
 .globl irq14;   irq14:  pushl $0;  pushl $1014; jmp asm_do_irq
 .globl irq_empty;
-			irq_empty:	pushl $0;  pushl   $-1; jmp asm_do_irq
+irq_empty:	pushl $0;  pushl   $-1; jmp asm_do_irq
 
 .globl asm_do_irq
 .extern irq_handle
 .globl switch_proc
 
 asm_do_irq:
-  cli
-  pushl %ds
-  pushl %es
-  pushl %fs
-  pushl %gs
-	pushal
+cli
+pushl %ds
+pushl %es
+pushl %fs
+pushl %gs
+pushal
 
-  movw $SELECTOR_KERNEL(SEG_KERNEL_DATA), %ax
-  movw %ax, %ds
-  movw %ax, %es
+movw $SELECTOR_KERNEL(SEG_KERNEL_DATA), %ax
+movw %ax, %ds
+movw %ax, %es
 
-  pushl %esp			# ???
-  call irq_handle
-  addl $4, %esp
+pushl %esp
+call irq_handle
+addl $4, %esp
 switch_proc:
-  popal
-  popl %gs
-  popl %fs
-  popl %es
-  popl %ds
-  addl $8, %esp
-  sti
-  iret
-
-  
+popal
+popl %gs
+popl %fs
+popl %es
+popl %ds
+addl $8, %esp
+sti
+iret
