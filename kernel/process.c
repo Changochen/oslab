@@ -202,8 +202,8 @@ void pcb_load(PCB* pcb, uint32_t offset){
     entry = elf->entry;
     printf("Game entry %x\n",entry);
     mm_alloc(pcb->pgdir, USTACKTOP-STACKSIZ, STACKSIZ);
-    //pcb_init(pcb, USTACKTOP-0x1FF, entry, 0);
-    pcb_init(pcb, USTACKTOP, entry, 0);
+    pcb_init(pcb, USTACKTOP-0x1FF, entry, 3);
+    //pcb_init(pcb, USTACKTOP, entry, 0);
     lcr3(PADDR(kern_pgdir));
 }
 
@@ -217,8 +217,6 @@ void pcb_funcload(PCB* pcb, void* ptr){
 int schel_num=0;
 void schedule(){
     schel_num++;
-    //printf("schedule!%d times\n",schel_num);
-    //printf("num %d\n",pcb_num(ready_l));
     while(1){
         if(cur_pcb==NULL){
             cur_pcb=pcb_pop(&ready_l);
@@ -248,7 +246,6 @@ void schedule(){
                 printf("hello,again!\n");
             }
             pcb_enqeque(&ready_l,cur_pcb);
-            //printf("After yield num %d\n",pcb_num(ready_l));
             cur_pcb=NULL;
         }else{
             //printf("nothing\n");

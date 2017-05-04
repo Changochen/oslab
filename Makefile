@@ -93,6 +93,7 @@ $(OBJ_BOOT_DIR)/%.o: $(BOOT_DIR)/%.c
 $(KERNEL): $(LD_SCRIPT)
 $(KERNEL): $(KERNEL_O) $(LIB_O)
 	$(LD) -e _start -m elf_i386 -T $(LD_SCRIPT) -nostdlib -o $@ $^ $(shell $(CC) $(KERNEL_CFLAGS) -print-libgcc-file-name)
+	objdump -D $@ >./ke.S
 	./fill.sh $@
 
 $(GAME): $(GAME_O) $(LIB_O)

@@ -58,7 +58,7 @@ char my_key_down(char s){
 	return r_eax;
 }
 int main(){
-    printf("game start!\n");
+    //printf("game start!\n");
     initVideo(0xFF);
     int flag=1;
     uint32_t old_time=0;
@@ -78,7 +78,7 @@ int main(){
         }
         if(get_gameState()!=1)flag=0;
     }
-    printf("LOSE!You live for %d seconds\n",counter3/100);
+    //printf("LOSE!You live for %d seconds\n",counter3/100);
     while(1);
     return 1;
 };

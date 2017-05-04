@@ -77,23 +77,6 @@ init_segment(void) {
 void set_tss_esp0(uint32_t esp) {
 	tss.esp0 = esp;
 }
-void pcb_enter(PCB* pcb)
-{
-    lcr3(PADDR(pcb->pgdir));
-    set_tss_esp0((uint32_t)(pcb->user_stacktop));
-    struct TrapFrame *tf = pcb->tf;
-    printf("eip:%x\n",tf->eip);
-    asm volatile("mov %0, %%ds" : : "r"(tf->ds));
-    asm volatile("mov %0, %%es" : : "r"(tf->es));
-    asm volatile("mov %0, %%fs" : : "r"(tf->fs));
-    asm volatile("mov %0, %%gs" : : "r"(tf->gs));
-    asm volatile("pushl %0" : : "r"((uint32_t)tf->ss));
-    asm volatile("pushl %0" : : "r"(tf->esp));
-    asm volatile("pushl %0" : : "r"(tf->eflags));
-    asm volatile("pushl %0" : : "r"((uint32_t)tf->cs));
-    asm volatile("pushl %0" : : "r"(tf->eip));
-    asm volatile("iret");
-}
 
 void init_page(void) {
     page_init();

@@ -1,1 +1,4 @@
+break *0xC01007de
+break *0xC0100807
+break *0xC010083c
 

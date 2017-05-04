@@ -20,7 +20,7 @@ void nothing2(int k){}
 
 void idle(){
   while(1){
-    //system_yield();
+    system_yield();
   }
 }
 
@@ -44,16 +44,14 @@ int main(){
     set_keyboard_intr_handler(nothing2);
     pcb_pool_init();
 
-    /*
     printf("new beginning\n");
     PCB *pidle = pcb_create();
     pcb_funcload(pidle, idle);
-    */
     //PCB *pcb = pcb_create();
     //PCB *pcb2 = pcb_create();
     //pcb_load(pcb, 102400);
     //pcb_load(pcb2, 102400);
-    //pcb_ready(pidle);
+    pcb_ready(pidle);
     //pcb_ready(pcb);
    // pcb_ready(pcb2);
     uint32_t i = 0;

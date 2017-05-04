@@ -3,6 +3,7 @@
 #include <lib/serial.h>
 #include <lib/video.h>
 #include <lib/syscall.h>
+#include "inc/process.h"
 //static void (*do_timer)(void);
 static void (*do_keyboard)(int);
 void
@@ -14,12 +15,14 @@ set_keyboard_intr_handler( void (*ptr)(int) ) {
 }
 extern void press_key();
 extern void do_timer();
+extern PCB* cur_pcb;
 //extern void schedule();
 void do_syscall(struct TrapFrame *);
 /* TrapFrame的定义在include/x86/memory.h
  * 请仔细理解这段程序的含义，这些内容将在后续的实验中被反复使用。 */
 void
 irq_handle(struct TrapFrame *tf) {
+    cur_pcb->tf=tf;
 	if(tf->irq < 1000) {
 		if(tf->irq == -1) {
 			//printk("%s, %d: Unhandled exception!\n", __FUNCTION__, __LINE__);
