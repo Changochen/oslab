@@ -198,5 +198,6 @@ int fork(){
     memcpy((void*)fork_pcb,(void*)cur_pcb,sizeof(PCB));
     fork_pcb->ppid=cur_pcb->pid;
     fork_pcb->pid=old_pid;
+    //fork_pcb->
     return 0;
 }
