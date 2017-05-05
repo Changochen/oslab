@@ -68,7 +68,6 @@ void init_page(void) {
     page_init();
 }
 
-//void switch_proc();
 void switch_proc();
 void scheduler_switch(PCB* pcb){
     cur_pcb = pcb;

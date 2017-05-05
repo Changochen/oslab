@@ -37,6 +37,14 @@ void __draw_frame(){
     memcpy(VGAP,Frame,VGA_SIZ);
 }
 
+void __flash_screen(){
+    memset(VGAP,-1,VGA_SIZ);
+}
+int system_fork(){
+    int r_eax=0;
+    asm volatile("int $0x80":"=a"(r_eax):"a"(SYS_FORK));
+    return r_eax;
+}
 char system_get_key(char c){
     char r_eax = 0;
     asm volatile("int $0x80":"=a"(r_eax) : "a"(SYS_GET_KEY), "b"(c));
@@ -83,4 +91,8 @@ uint32_t system_getpid(){
     uint32_t res;
     asm volatile("int $0x80":"=a"(res):"a"(SYS_GETPID));
     return res;
+}
+
+void system_flash_screen(){
+    asm volatile("int $0x80"::"a"(SYS_FLASH_SCREEN));
 }

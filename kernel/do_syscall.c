@@ -9,6 +9,7 @@
 extern uint32_t get_tick();
 extern int8_t get_key(char s);
 extern void schedule();
+extern int fork();
 void do_syscall(struct TrapFrame *tf) {
     switch(tf->eax) {
         case SYS_PUTC:
@@ -45,6 +46,15 @@ void do_syscall(struct TrapFrame *tf) {
             cur_pcb->ps=YIELD;
             //printf("yield\n");
             schedule();
+            break;
+        case SYS_FORK:
+            tf->eax=fork();
+            break;
+        case SYS_EXIT:
+            /* to be finished*/
+            break;
+        case SYS_FLASH_SCREEN:
+            __flash_screen();
             break;
     }
 }

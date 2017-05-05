@@ -44,6 +44,7 @@ void timer(){
     counter++;
     counter2++;
     counter3++;
+    //system_flash_screen();
     drawFrame();
 }
 

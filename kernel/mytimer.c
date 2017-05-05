@@ -8,11 +8,10 @@ extern int pcb_del(PCB**,PCB*);
 extern void schedule();
 void do_timer(){
     ticks++;
-    if(ticks%40==0){
-        printf("tick!%d\n",cur_pcb->time_lapse);
+    cur_pcb->time_lapse++;
+    if(ticks%50==0){
         schedule();
     }
-    cur_pcb->time_lapse++;
 
     PCB* ptr=block_l;
     while(ptr!=NULL){
