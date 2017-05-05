@@ -19800,7 +19800,7 @@ Disassembly of section .debug_line:
      2d3:	08 59 a2             	or     %bl,-0x5e(%ecx)
      2d6:	59                   	pop    %ecx
      2d7:	3e 67 83 91 08 83 d7 	adcl   $0xffffffd7,%ds:-0x7cf8(%bx,%di)
-     2de:	91                   	xchg   %eax,%ecx
+     2de:	92                   	xchg   %eax,%edx
      2df:	59                   	pop    %ecx
      2e0:	02 02                	add    (%edx),%al
      2e2:	00 01                	add    %al,(%ecx)
