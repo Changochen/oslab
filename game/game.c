@@ -50,6 +50,13 @@ void timer(){
 
 int main(){
     printk("game start!\n");
+    int pid=system_fork();
+    system_fork();
+    if(pid==0){
+        printk("kid!\n");
+    }else{
+        printk("parent\n");
+    }
     initVideo(0xFF);
     int flag=1;
     uint32_t old_time=0;

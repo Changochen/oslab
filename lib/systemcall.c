@@ -45,6 +45,10 @@ int system_fork(){
     asm volatile("int $0x80":"=a"(r_eax):"a"(SYS_FORK));
     return r_eax;
 }
+
+void system_exit(){
+    asm volatile("int $0x80"::"a"(SYS_EXIT));
+}
 char system_get_key(char c){
     char r_eax = 0;
     asm volatile("int $0x80":"=a"(r_eax) : "a"(SYS_GET_KEY), "b"(c));

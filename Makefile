@@ -142,5 +142,3 @@ clean:
 	@rm -rf $(KERNEL)  2> /dev/null
 	@rm -rf $(IMAGE)   2> /dev/null
 	@rm -rf $(GAME)   2> /dev/null
-	@git add .
-	@git commit -m 'empty'

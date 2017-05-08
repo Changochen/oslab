@@ -194,10 +194,16 @@ void schedule(){
 
 int fork(){
     PCB* fork_pcb=pcb_create();
+    if(fork_pcb==NULL){
+        return -1;
+    }
     int old_pid=fork_pcb->pid;
+    cur_pcb->tf->eax=old_pid;
     memcpy((void*)fork_pcb,(void*)cur_pcb,sizeof(PCB));
     fork_pcb->ppid=cur_pcb->pid;
     fork_pcb->pid=old_pid;
-    //fork_pcb->
+    fork_pcb->tf=(struct TrapFrame*)((uint32_t)fork_pcb->kern_stack+((uint32_t)cur_pcb->tf-(uint32_t)cur_pcb->kern_stack));
+    fork_pcb->tf->eax=0;
+    pcb_ready(fork_pcb);
     return 0;
 }
