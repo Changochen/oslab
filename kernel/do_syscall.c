@@ -40,19 +40,16 @@ void do_syscall(struct TrapFrame *tf) {
         case SYS_SLEEP:
             cur_pcb->ps=BLOCKED;
             cur_pcb->time_lapse=tf->ebx;
-            //printf("sleep\n");
             schedule();
             break;
         case SYS_YIELD:
             cur_pcb->ps=YIELD;
-            //printf("yield\n");
             schedule();
             break;
         case SYS_FORK:
             fork();
             break;
         case SYS_EXIT:
-            /* to be finished*/
             cur_pcb->inuse=0;
             cur_pcb=NULL;
             schedule();
