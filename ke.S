@@ -20915,9 +20915,9 @@ Disassembly of section .debug_line:
      aa1:	5a                   	pop    %edx
      aa2:	02 24 13             	add    (%ebx,%edx,1),%ah
      aa5:	30 d7                	xor    %dl,%bh
-     aa7:	30 ad d8 59 30 ae    	xor    %ch,-0x51cfa628(%ebp)
+     aa7:	30 ad d7 59 30 ad    	xor    %ch,-0x52cfa629(%ebp)
      aad:	59                   	pop    %ecx
-     aae:	30 59 31             	xor    %bl,0x31(%ecx)
+     aae:	30 59 30             	xor    %bl,0x30(%ecx)
      ab1:	bb 9f 59 30 59       	mov    $0x5930599f,%ebx
      ab6:	22 02                	and    (%edx),%al
      ab8:	06                   	push   %es
@@ -21066,10 +21066,12 @@ Disassembly of section .debug_line:
      c3b:	59                   	pop    %ecx
      c3c:	f3 5a                	repz pop %edx
      c3e:	83 08 2f             	orl    $0x2f,(%eax)
-     c41:	84 08                	test   %cl,(%eax)
-     c43:	30 d7                	xor    %dl,%bh
-     c45:	d8 59 00             	fcomps 0x0(%ecx)
-     c48:	02 04 01             	add    (%ecx,%eax,1),%al
+     c41:	83 08 2f             	orl    $0x2f,(%eax)
+     c44:	d7                   	xlat   %ds:(%ebx)
+     c45:	d7                   	xlat   %ds:(%ebx)
+     c46:	59                   	pop    %ecx
+     c47:	00 02                	add    %al,(%edx)
+     c49:	04 01                	add    $0x1,%al
      c4b:	08 4b 02             	or     %cl,0x2(%ebx)
      c4e:	02 00                	add    (%eax),%al
      c50:	01 01                	add    %eax,(%ecx)

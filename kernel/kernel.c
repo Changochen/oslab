@@ -37,12 +37,9 @@ int main(){
     PCB *pidle = pcb_create();
     pcb_funcload(pidle, init);
     PCB *pcb = pcb_create();
-    //PCB *pcb2 = pcb_create();
     pcb_load(pcb, 102400);
-    //pcb_load(pcb2, 102400);
     pcb_ready(pidle);
     pcb_ready(pcb);
-    //pcb_ready(pcb2);
     schedule();
     printf("%s\n", "Never return otherwise you are fucked!");
     while (1){};
