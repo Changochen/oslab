@@ -159,7 +159,6 @@ void pcb_load(PCB* pcb, uint32_t offset){
     entry = elf->entry;
     mm_alloc(pcb->pgdir, USTACKTOP-STACKSIZ, STACKSIZ);
     pcb_init(pcb, USTACKTOP-0x1FF, entry, 3);
-    //pcb_init(pcb, USTACKTOP, entry, 0);
     lcr3(PADDR(kern_pgdir));
 }
 
@@ -182,7 +181,7 @@ void schedule(){
         }else if(cur_pcb->ps==BLOCKED){
             pcb_enqeque(&block_l,cur_pcb);
             cur_pcb=NULL;
-        }else if(cur_pcb->time_lapse>100||cur_pcb->ps==YIELD){
+        }else if(cur_pcb->time_lapse>400||cur_pcb->ps==YIELD){
             cur_pcb->ps=READY;
             pcb_enqeque(&ready_l,cur_pcb);
             cur_pcb=NULL;
@@ -198,8 +197,11 @@ int fork(){
         return -1;
     }
     int old_pid=fork_pcb->pid;
+    pte_t* old_pte=fork_pcb->pgdir;
     cur_pcb->tf->eax=old_pid;
     memcpy((void*)fork_pcb,(void*)cur_pcb,sizeof(PCB));
+    fork_pcb->pgdir=old_pte;
+    fork_pgdir(fork_pcb->pgdir,cur_pcb->pgdir);
     fork_pcb->ppid=cur_pcb->pid;
     fork_pcb->pid=old_pid;
     fork_pcb->tf=(struct TrapFrame*)((uint32_t)fork_pcb->kern_stack+((uint32_t)cur_pcb->tf-(uint32_t)cur_pcb->kern_stack));

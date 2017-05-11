@@ -72,7 +72,7 @@ void switch_proc();
 void scheduler_switch(PCB* pcb){
     cur_pcb = pcb;
     lcr3(PADDR(pcb->pgdir));
-    set_tss_esp0((uint32_t)(pcb->user_stacktop));
+    set_tss_esp0((uint32_t)(pcb->kern_stacktop-0x100));
     asm volatile("mov %0, %%esp" : : "r"(pcb->tf));
     asm volatile("jmp %0" : : "r"(switch_proc));
 }
