@@ -16,6 +16,11 @@
 #define SYS_FORK        4010
 #define SYS_EXIT        4011
 #define SYS_FLASH_SCREEN 4012
+#define SYS_SEM_OPEN    4013
+#define SYS_SEM_CLOSE   4014
+#define SYS_SEM_WAIT    4015
+#define SYS_SEM_POST    4016
+#define SYS_PTHREAD_CREATE 4017
 #define TIMER_HANDLERS_MAX 100
 
 
@@ -37,6 +42,11 @@ uint32_t system_getpid();
 void system_putc(char c);
 int system_fork();
 void system_exit();
+int* system_sem_open();
+void system_sem_close(int*);
+void system_sem_wait();
+void system_sem_post();
+void system_pthread_create();
 typedef struct timer_handler{
     void (*ptr)(void);
     int used;
