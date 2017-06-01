@@ -71,10 +71,8 @@ void consumer(){
         system_sem_wait(&mutex);
         if(product_c!=0){
         printk("Get the %d product!They are:\n",product_c);
-        for(int i=0;i<product_c;i++){
-            printk("%d\n",products[i]);
-        }
-            product_c=0;
+        for(int i=0;i<product_c;i++)printk("%d\n",products[i]);
+        product_c=0;
         }
         if(c++%(product_id%5+1)==0)system_yield();
         system_sem_post(&mutex);

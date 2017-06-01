@@ -13,7 +13,7 @@
 #define elf   ((struct ELFHeader *) ELFADDR)
 #define PSZIE 0x1000
 #define USER_STACK 0xeebfe000
-#define MDEBUG 0
+#define MDEBUG 1
 uint32_t entry;
 PCB PCBPool[MAXPROCESS];
 struct TrapFrame tfPool[MAXPROCESS];
