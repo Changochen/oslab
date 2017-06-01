@@ -5,10 +5,39 @@
 #define VGA_SIZ 64000
 uint8_t* VGAP=(uint8_t*)0xa0000;
 uint8_t Frame[320*200];
+
+
+
 unsigned int system_get_tick(){
     uint32_t t;
     asm volatile("int $0x80": "=a"(t) : "a"(SYS_GET_TICK));
     return t;
+}
+
+void system_thread_create(uint32_t func){
+    asm volatile("int $0x80": : "a"(SYS_PTHREAD_CREATE),"b"(func));
+}
+
+void system_sem_destroy(void *sem){
+    asm volatile("int $0x80": : "a"(SYS_SEM_DESTROY),"b"(sem));
+}
+
+void system_sem_post(void *sem){
+    asm volatile("int $0x80": : "a"(SYS_SEM_POST),"b"(sem));
+}
+
+void system_sem_wait(void *sem){
+    asm volatile("int $0x80": : "a"(SYS_SEM_WAIT),"b"(sem));
+}
+
+int system_sem_trywait(void* sem){
+    int res;
+    asm volatile("int $0x80":"=a"(res) : "a"(SYS_SEM_TRYWAIT),"b"(sem));
+    return res;
+}
+
+void system_sem_init(void* sem,int count){
+    asm volatile("int $0x80": : "a"(SYS_SEM_INIT),"b"(sem),"c"(count));
 }
 
 char system_key_down(char s){

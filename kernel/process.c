@@ -12,12 +12,12 @@
 #define ELFADDR 0
 #define elf   ((struct ELFHeader *) ELFADDR)
 #define PSZIE 0x1000
-
+#define USER_STACK 0xeebfe000
+#define MDEBUG 0
 uint32_t entry;
 PCB PCBPool[MAXPROCESS];
 struct TrapFrame tfPool[MAXPROCESS];
 uint32_t pid=0;
-
 PCB* cur_pcb = NULL,*ready_l = NULL,*block_l= NULL;
 
 uint32_t pcb_num(PCB* head){
@@ -94,7 +94,7 @@ void pcb_init(PCB *p, uint32_t ustack, uint32_t entry, uint8_t pri)
         tf->ds = tf->es = tf->ss = tf->fs = tf->gs = GD_UD | 3;
         tf->cs = GD_UT | 3;
     }
-    printf("stack:%x,pid %d\n",ustack,p->pid);
+    if(MDEBUG)printf("stack:%x,pid %d\n",ustack,p->pid);
     tf->esp = ustack;
     tf->eip = entry;
     if(pri == 0){
@@ -162,10 +162,10 @@ void pcb_load(PCB* pcb, uint32_t offset){
     lcr3(PADDR(kern_pgdir));
 }
 
-void pcb_funcload(PCB* pcb, void* ptr){
+void pcb_funcload(PCB* pcb, void* ptr,int pri){
     lcr3(PADDR(pcb -> pgdir));
     entry = (uint32_t)ptr;
-    pcb_init(pcb, (uint32_t)pcb->kern_stacktop, entry, 0);
+    pcb_init(pcb, (uint32_t)pcb->kern_stacktop, entry, pri);
     lcr3(PADDR(kern_pgdir));
 }
 
@@ -175,13 +175,13 @@ void schedule(){
             cur_pcb=pcb_pop(&ready_l);
             cur_pcb->time_lapse=0;
             cur_pcb->ps=RUNNING;
-            printf("switch to pid %d\n",cur_pcb->pid);
+            if(MDEBUG)printf("switch to pid %d\n",cur_pcb->pid);
             scheduler_switch(cur_pcb);
             break;
         }else if(cur_pcb->ps==BLOCKED){
             pcb_enqeque(&block_l,cur_pcb);
             cur_pcb=NULL;
-        }else if(cur_pcb->time_lapse>400||cur_pcb->ps==YIELD){
+        }else if(cur_pcb->time_lapse>100||cur_pcb->ps==YIELD){
             cur_pcb->ps=READY;
             pcb_enqeque(&ready_l,cur_pcb);
             cur_pcb=NULL;
@@ -208,4 +208,75 @@ int fork(){
     fork_pcb->tf->eax=0;
     pcb_ready(fork_pcb);
     return 0;
+}
+
+int thread_create(uint32_t func){
+    PCB* thread_pcb=pcb_create();
+    if(thread_pcb==NULL){
+        return -1;
+    }
+    int old_pid=thread_pcb->pid;
+    pte_t* old_pte=thread_pcb->pgdir;
+    memcpy((void*)thread_pcb,(void*)cur_pcb,sizeof(PCB));
+    thread_pcb->pgdir=old_pte;
+    thread_pcb->pid=old_pid;
+    memcpy(thread_pcb->pgdir,cur_pcb->pgdir,PGSIZE);
+    thread_pcb->ppid=cur_pcb->pid;
+    mm_alloc(thread_pcb->pgdir,USER_STACK-2*STACKSIZ,2*STACKSIZ);
+    thread_pcb->tf=(struct TrapFrame*)((uint32_t)thread_pcb->kern_stack+((uint32_t)cur_pcb->tf-(uint32_t)cur_pcb->kern_stack));
+    thread_pcb->tf->esp=USER_STACK-0x80;
+    thread_pcb->tf->eip=func;
+    pcb_ready(thread_pcb);
+    return 0;
+}
+
+
+void sem_init(Sem* sem,int count){
+    asm volatile("cli");
+    sem->count=count;
+    sem->wait_list=NULL;
+    asm volatile("sti");
+}
+
+void sem_destroy(Sem* sem){
+    asm volatile("cli");
+    sem=0;
+    asm volatile("sti");
+}
+
+void sem_post(Sem* sem){
+    asm volatile("cli");
+    if(sem->wait_list==NULL){
+        if(MDEBUG)printf("Simple Post\n");
+        sem->count++;
+        asm volatile("sti");
+    }
+    else{
+        if(MDEBUG)printf("Post to wait_list\n");
+        PCB* temp=pcb_pop(&sem->wait_list);
+        pcb_ready(temp);
+        cur_pcb->ps=YIELD;
+        asm volatile("sti");
+        schedule();
+    }
+}
+
+void sem_wait(Sem* sem){
+    if(sem->count==0){
+        pcb_enqeque(&sem->wait_list,cur_pcb);
+        cur_pcb=NULL;
+        schedule();
+    }
+    asm volatile("cli");
+    sem->count--;
+    asm volatile("sti");
+}
+
+int sem_trywait(Sem* sem){
+    int res=1;
+    asm volatile("cli");
+    if(sem->count==0)res=-1;
+    else sem->count--;
+    asm volatile("sti");
+    return res;
 }

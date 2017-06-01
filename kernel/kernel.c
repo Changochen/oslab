@@ -35,7 +35,7 @@ int main(){
     pcb_pool_init();
 
     PCB *pidle = pcb_create();
-    pcb_funcload(pidle, init);
+    pcb_funcload(pidle, init,SYSTEM_PRI);
     PCB *pcb = pcb_create();
     pcb_load(pcb, 102400);
     pcb_ready(pidle);

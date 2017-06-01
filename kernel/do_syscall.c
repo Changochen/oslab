@@ -10,9 +10,29 @@ extern uint32_t get_tick();
 extern int8_t get_key(char s);
 extern void schedule();
 extern int fork();
-
+extern int thread_create();
 void do_syscall(struct TrapFrame *tf) {
     switch(tf->eax) {
+        /*to be finished*/
+        case SYS_SEM_INIT:
+            sem_init((Sem*)tf->ebx,tf->ecx);
+            break;
+        case SYS_SEM_DESTROY:
+            sem_destroy((Sem*)tf->ebx);
+            break;
+        case SYS_SEM_POST:
+            sem_post((Sem*)tf->ebx);
+            break;
+        case SYS_SEM_WAIT:
+            sem_wait((Sem*)tf->ebx);
+            break;
+        case SYS_SEM_TRYWAIT:
+            tf->eax=sem_trywait((Sem*)tf->ebx);
+            break;
+        /* to be finished */
+        case SYS_PTHREAD_CREATE:
+            thread_create(tf->ebx);
+            break;
         case SYS_PUTC:
             serial_printc(tf->ebx);
             break;

@@ -6,6 +6,8 @@
 #define NPKSTACKSIZE 2*4096
 #define MAXPROCESS 500
 #define STACKSIZ 8192*3
+#define SYSTEM_PRI 0
+#define USER_PRI   3
 typedef enum{
     YIELD,
     READY,
@@ -31,6 +33,13 @@ typedef struct PCB {
     //uint8_t kstackprotect[0x10];
 } PCB;
 
+typedef struct {
+    int                     lock;
+    unsigned int            count;
+    PCB*                    wait_list;
+
+}Sem;
+
 extern PCB *cur_pcb;
 extern PCB* ready_l;
 extern PCB* block_l;
@@ -44,7 +53,7 @@ void pcb_ready(PCB*);
 void schedule();
 
 void pcb_load(PCB* pcb, uint32_t offset);
-void pcb_funcload(PCB* pcb, void* entry);
+void pcb_funcload(PCB* pcb, void* entry,int priv);
 void scheduler_switch(PCB*);
 uint32_t pcb_num(PCB* head);
 PCB*     pcb_pop(PCB** head);
@@ -52,5 +61,9 @@ int      pcb_enqeque(PCB** head, PCB* p);
 int      pcb_del(PCB** head, PCB* p);
 
 int fork();
-
+void sem_init(Sem* sem,int count);
+void sem_destroy(Sem* sem);
+void sem_post(Sem* sem);
+void sem_wait(Sem* sem);
+int sem_trywait(Sem* sem);
 #endif
