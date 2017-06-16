@@ -123,7 +123,10 @@ qemu: $(IMAGE)
 image: $(IMAGE)
 
 run: $(IMAGE)
-	$(QEMU) $(QEMU_RUN_OPTIONS) $(IMAGE)
+	./formatter
+	./copy2myfs hello.txt
+	$(QEMU) $(QEMU_RUN_OPTIONS) disks.bin
+	#$(IMAGE)
 
 # Faster, but not suitable for debugging
 qemu-kvm: $(IMAGE)

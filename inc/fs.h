@@ -13,6 +13,20 @@
 /* Maximum disk size we can handle (3GB) */
 #define DISKSIZE	0xC0000000
 
+typedef enum{
+	SEEK_SET,
+	SEEK_CUR,
+	SEEK_END
+}OFFSET_STATE;
+
+typedef enum 
+{
+	O_RDONLY,
+	O_WRONLY,
+	O_RDWR,
+	O_APPEND
+}FILE_FLAG;
+
 #pragma pack(0)
 typedef struct
 {
@@ -26,7 +40,7 @@ typedef struct {
 }dirent;
 
 typedef struct {
-  dirent entries[512 / sizeof(dirent)];
+  dirent entries[512 / sizeof(dirent)*2];
 }dir;
 
 typedef struct {
@@ -35,6 +49,15 @@ typedef struct {
 #pragma pack()
 
 typedef int bool;
+typedef struct FCB
+{
+	FILE_FLAG flag;
+	int inuse;
+	int fd;
+	unsigned int inode_offset;
+	unsigned int offset;
+	struct FCB* next;
+}FCB;
 //struct Super *super;		// superblock
 //uint32_t *bitmap;		// bitmap blocks mapped in memory
 
@@ -45,7 +68,7 @@ void	ide_set_partition(uint32_t first_sect, uint32_t nsect);
 int	ide_read(uint32_t secno, void *dst, size_t nsecs);
 int	ide_write(uint32_t secno, const void *src, size_t nsecs);
 
-
+void init_fs();
 int open(const char *pathname, int flags);
 int read(int fd, void *buf, int len);
 int write(int fd, void *buf, int len);

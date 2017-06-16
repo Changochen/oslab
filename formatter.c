@@ -62,6 +62,7 @@ int main(){
     close(boot);
     write(disks,buffer,SEC);
 
+    /*
     lseek(disks,(DATA_OFFSET+1)*SEC,SEEK_SET);
     int kernel=open("ker.bak",O_RDONLY);
     while(1){
@@ -71,11 +72,14 @@ int main(){
         write(disks,buffer,SEC);
     }
     close(kernel);
+    */
     lseek(disks,SEC,SEEK_SET);
     write(disks,bitmap,sizeof(bitmap));
     write(disks,dir,sizeof(dir));
     write(disks,inodes,sizeof(inodes));
     close(disks);
+    system("./copy2myfs ker.bak");
+    system("./copy2myfs game.bin");
     return 0;
 }
 

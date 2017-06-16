@@ -81,17 +81,38 @@ void consumer(){
 
 int main(){
     printk("game start!\n");
+    /*
     system_sem_init(&mutex,1);
     system_thread_create((uint32_t)producer);
     system_thread_create((uint32_t)consumer);
+    */
     /*
     int pid=system_fork();
     if(pid==0){
         printk("kid!\n");
-    }else{
+        }else{
         printk("parent\n");
+        }
+        */
+    int fd=fs_open("hello.txt",0);
+    char test[513];
+    if(fd!=-1){
+        fs_read(fd,test,513);
+        printk("%c\n",test[512]);
+        test[0]='c';
+        fs_close(fd);
+    }else{
+        printk("FUCK\n");
     }
-    */
+    fd=fs_open("hello.txt",0);
+    if(fd!=-1){
+        fs_read(fd,test,6);
+        test[6]=0;
+        printk("%s\n",test);
+        fs_close(fd);
+    }else{
+        printk("FUCK\n");
+    }
     initVideo(0xFF);
     int flag=1;
     uint32_t old_time=0;

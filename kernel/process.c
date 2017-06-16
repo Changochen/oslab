@@ -14,12 +14,30 @@
 #define PSZIE 0x1000
 #define USER_STACK 0xeebfe000
 #define MDEBUG 0
+#define INODE_NUM 32
+#define BLOCK_OFFSET 98
+#define BITMAP_OFFSET 0
+#define BITMAP_SIZE (64*SECTSIZE)
+#define DIR_OFFSET (64*SECTSIZE)
+#define DIR_SIZE (2*SECTSIZE)
+#define INODE_OFFSET (66*SECTSIZE)
+#define INODE_SIZE (32*SECTSIZE)
+#define MAXOPENFILE 256
+#define block_to_address(A) ((A+BLOCK_OFFSET)*SECTSIZE)
+#define offset_to_block_offset(A)  ((A/512))
+#define offset_left(A)      (512-(A%512))
 uint32_t entry;
 PCB PCBPool[MAXPROCESS];
+FCB FCBPool[MAXOPENFILE];
 struct TrapFrame tfPool[MAXPROCESS];
 uint32_t pid=0;
 PCB* cur_pcb = NULL,*ready_l = NULL,*block_l= NULL;
 
+dir directory;
+inode inodes[INODE_NUM];
+bitmap bmap;
+
+int get_dir_entry_by_name(const char* pathname);
 uint32_t pcb_num(PCB* head){
     uint32_t num = 0;
     PCB* p = head;
@@ -53,6 +71,21 @@ int pcb_enqeque(PCB** head, PCB* p){
     }
 }
 
+int fcb_enqeque(FCB** head, FCB* p){
+    if(*head == NULL){
+        *head = p;
+        return 0;
+    }else{
+        FCB* temp=*head;
+        while(temp->next!=NULL){
+            temp = temp->next;
+        }
+        temp->next = p;
+        p->next=NULL;
+        return 1;
+    }
+}
+
 int pcb_del(PCB** head, PCB* p){
     if(*head==NULL){
         return 0;
@@ -74,11 +107,42 @@ int pcb_del(PCB** head, PCB* p){
     return 1;
 }
 
+int fcb_del(FCB** head, FCB* p){
+    if(*head==NULL){
+        return -1;
+    }
+    if(*head==p){
+        (*head)=(*head)->next;
+        p->next=NULL;
+        p->inuse=0;
+    }else{
+        FCB* temp=*head;
+        while((temp!=NULL)&&(temp->next!=p))temp=temp->next;
+        if(temp==NULL)return -1;
+        else{
+            temp->next=temp->next->next;
+            p->next=NULL;
+            p->inuse=0;
+            return 1;
+        }
+    }
+    return 1;
+}
+
 void pcb_pool_init()
 {
     int i;
     for(i=0; i<MAXPROCESS; i++){
         PCBPool[i].inuse = 0;
+        PCBPool[i].files=NULL;
+    }
+}
+
+void fcb_pool_init(){
+    int i;
+    for(i=0; i<MAXOPENFILE; i++){
+        FCBPool[i].inuse = 0;
+        FCBPool[i].next=NULL;
     }
 }
 
@@ -117,6 +181,7 @@ PCB* pcb_create()
     PCB *p = &PCBPool[i];
     p->tf = &tfPool[i];
     p->inuse = 1;
+    p->open_file_num=0;
 
     struct PageInfo *pp = page_alloc(ALLOC_ZERO);
     if (pp == NULL) return NULL;
@@ -129,6 +194,16 @@ PCB* pcb_create()
     return p;
 }
 
+FCB* fcb_create(){
+    uint32_t i=0;
+    for(i=0; i<MAXOPENFILE; i++){
+        if(FCBPool[i].inuse==0)break;
+    }
+    if(i==MAXOPENFILE)return NULL;
+    FCB *p = &FCBPool[i];
+    p->inuse=1;
+    return p;
+}
 void pcb_ready(PCB* pcb){
     if(ready_l == NULL){
         ready_l = pcb;
@@ -160,6 +235,13 @@ void pcb_load(PCB* pcb, uint32_t offset){
     mm_alloc(pcb->pgdir, USTACKTOP-STACKSIZ, STACKSIZ);
     pcb_init(pcb, USTACKTOP-0x1FF, entry, 3);
     lcr3(PADDR(kern_pgdir));
+}
+
+void program_load(PCB* pcb,const char* prog){
+    int off=get_dir_entry_by_name(prog);
+    unsigned int offset=inodes[off].blocks[0];
+    offset=block_to_address(offset);
+    pcb_load(pcb,offset);
 }
 
 void pcb_funcload(PCB* pcb, void* ptr,int pri){
@@ -281,19 +363,93 @@ int sem_trywait(Sem* sem){
     return res;
 }
 
+void init_fs(){
+    readseg(bmap.mask,BITMAP_SIZE,BITMAP_OFFSET);
+    readseg((unsigned char *)directory.entries,DIR_SIZE,DIR_OFFSET);
+    readseg((unsigned char*)inodes,INODE_SIZE,INODE_OFFSET);
+    fcb_pool_init();
+}
+
+int get_dir_entry_by_name(const char* pathname){
+    for(int i=0;i!=INODE_NUM;i++){
+        if(strcmp(pathname,directory.entries[i].filename)==0)return i;
+    }
+    return -1;
+}
+
+FCB* get_fcb_by_fd(int fd){
+    FCB* res=cur_pcb->files;
+    while(res!=NULL){
+        if(res->fd==fd)return res;
+        res=res->next;
+    }
+    return NULL;
+}
 
 int open(const char *pathname, int flags){
-    return 1;
+    int off=get_dir_entry_by_name(pathname);
+    if(off==-1)return -1;
+    FCB* p=fcb_create();
+    p->inode_offset=off;
+    p->flag=flags;
+    p->fd=(cur_pcb->open_file_num++)+3;
+    p->offset=0;
+    p->next=NULL;
+    fcb_enqeque(&cur_pcb->files,p);
+    return p->fd;
 }
+
 int read(int fd, void *buf, int len){
-    return 1;
+    FCB* file=get_fcb_by_fd(fd);
+    if((file->offset+len)>directory.entries[file->inode_offset].file_size){
+        len=directory.entries[file->inode_offset].file_size-file->offset;
+        if(len<0)return -1;
+    }
+    unsigned int cur_sec=offset_left(file->offset);
+    unsigned block_offset=offset_to_block_offset(file->offset);
+    unsigned int paddr=block_to_address(inodes[file->inode_offset].blocks[block_offset]);
+    paddr+=(512-cur_sec);
+    unsigned char tmp[512];
+    if(cur_sec>len){
+        memset(tmp,0,SECTSIZE);
+        readseg(tmp,SECTSIZE,paddr);
+        memcpy(buf,tmp,len);
+        file->offset+=len;
+        return len;
+    }else{
+        memset(tmp,0,SECTSIZE);
+        readseg(tmp,SECTSIZE,paddr);
+        memcpy(buf,tmp,cur_sec);
+        file->offset+=cur_sec;
+        return cur_sec+read(fd,buf+cur_sec,len-cur_sec);
+    }
 }
+
+
 int write(int fd, void *buf, int len){
     return 1;
 }
+
 int lseek(int fd, int offset, int whence){
-    return 1;
+    FCB* tmp=get_fcb_by_fd(fd);
+    switch((OFFSET_STATE)whence){
+        case SEEK_SET:
+            tmp->offset=offset;
+            break;
+        case SEEK_CUR:
+            tmp->offset+=offset;
+            break;
+        case SEEK_END:
+            tmp->offset=directory.entries[tmp->inode_offset].file_size;
+            tmp->offset-=offset;
+            break;
+    }
+    return tmp->offset;
 }
+
 int close(int fd){
-    return 1;
+    FCB* file=get_fcb_by_fd(fd);
+    //return fcb_del(&cur_pcb->files,file);
+    fcb_del(&cur_pcb->files,file);
+    return  1;
 }

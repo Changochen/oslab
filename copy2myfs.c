@@ -56,7 +56,6 @@ unsigned int get_offset(int fd){
 
 int get_file_offset(char* filename){
     for(int i=0;i!=32;i++){
-        printf("%s",dir[i].filename);
         if(strcmp(filename,dir[i].filename)==0)return i;
     }
     return -1;
@@ -76,7 +75,6 @@ int main(int argc,char** argv){
     int disks=open("disks.bin",O_RDWR);
     lseek(disks,SEC,SEEK_SET);
     read(disks,bitmap,sizeof(bitmap));
-    printf("%c\n",bitmap[0]);
     read(disks,dir,sizeof(dir));
     read(disks,inodes,sizeof(inodes));
 
@@ -93,7 +91,6 @@ int main(int argc,char** argv){
         close(disks);
         return -1;
     }
-    printf("%d\n",file_offset);
     memcpy(dir[file_offset].filename,argv[1],strlen(argv[1]));
     printf("%s\n",dir[file_offset].filename);
     dir[file_offset].inode_offset=file_offset;

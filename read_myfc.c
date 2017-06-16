@@ -93,6 +93,7 @@ int main(int argc,char** argv){
     char* file_buffer=(char*)malloc(dir[readfile_off].file_size);
     char* temp=file_buffer;
     int readfile=open(argv[2],O_WRONLY|O_CREAT,0600);
+    //int readfile=open(argv[2],O_WRONLY);
     int byte_left=dir[readfile_off].file_size;
     for(int i=0;i!=sec;i++){
         memset(buffer,0,SEC);
