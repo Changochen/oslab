@@ -5,7 +5,7 @@
 #include <lib/timer.h>
 #include <lib/irq.h>
 #include <lib/video.h>
-
+#include <inc/string.h>
 #include "inc/elf.h"
 #include "inc/disk.h"
 #include "inc/types.h"
@@ -96,18 +96,17 @@ int main(){
         */
     int fd=fs_open("hello.txt",0);
     char test[513];
+    memcpy(test,"aaaaaaaaaa",10);
     if(fd!=-1){
-        fs_read(fd,test,513);
-        printk("%c\n",test[512]);
-        test[0]='c';
+        fs_write(fd,test,10);
         fs_close(fd);
     }else{
         printk("FUCK\n");
     }
     fd=fs_open("hello.txt",0);
     if(fd!=-1){
-        fs_read(fd,test,6);
-        test[6]=0;
+        fs_read(fd,test,10);
+        test[10]=0;
         printk("%s\n",test);
         fs_close(fd);
     }else{

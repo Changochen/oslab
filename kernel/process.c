@@ -37,6 +37,10 @@ dir directory;
 inode inodes[INODE_NUM];
 bitmap bmap;
 
+unsigned char bits[]={
+    0x80,0x40,0x20,0x10,8,4,2,1
+};
+
 int get_dir_entry_by_name(const char* pathname);
 uint32_t pcb_num(PCB* head){
     uint32_t num = 0;
@@ -312,7 +316,6 @@ int thread_create(uint32_t func){
     return 0;
 }
 
-
 void sem_init(Sem* sem,int count){
     asm volatile("cli");
     sem->count=count;
@@ -425,8 +428,59 @@ int read(int fd, void *buf, int len){
     }
 }
 
+unsigned int find_new_block(){
+    unsigned int res;
+    for(unsigned int i=0; i<(SECTSIZE* 64);i++){
+        if(bmap.mask[i]==0xFF)continue;
+        for(int j=0;j!=8;j++){
+            if((bmap.mask[i]&bits[j])==0){
+                bmap.mask[i]|=bits[j];
+                res=i*8+j;
+                break;
+            }
+        }
+        return res;
+    }
+    return 0;
+}
+
 
 int write(int fd, void *buf, int len){
+    FCB* file=get_fcb_by_fd(fd);
+    unsigned int cur_sec=offset_left(file->offset);
+    unsigned block_offset=offset_to_block_offset(file->offset);
+    unsigned block=inodes[file->inode_offset].blocks[block_offset];
+    if(block==0){
+        inodes[file->inode_offset].blocks[block_offset]=block=find_new_block();
+    }
+    unsigned int paddr=block_to_address(block);
+    paddr+=(SECTSIZE-cur_sec);
+    unsigned char tmp[512];
+    if(cur_sec>len){
+        memset(tmp,0,SECTSIZE);
+        readseg(tmp,SECTSIZE,paddr);
+        memcpy(tmp+(SECTSIZE-cur_sec),buf,len);
+        writeseg(tmp,SECTSIZE,paddr);
+        file->offset+=len;
+        if(file->offset>directory.entries[file->inode_offset].file_size){
+            printf("Yes\n");
+            directory.entries[file->inode_offset].file_size=file->offset;
+        }
+        writeseg(bmap.mask,BITMAP_SIZE,BITMAP_OFFSET);
+        writeseg((unsigned char *)directory.entries,DIR_SIZE,DIR_OFFSET);
+        writeseg((unsigned char*)inodes,INODE_SIZE,INODE_OFFSET);
+        return len;
+    }else{
+        memset(tmp,0,SECTSIZE);
+        readseg(tmp,SECTSIZE,paddr);
+        memcpy(tmp+(SECTSIZE-cur_sec),buf,cur_sec);
+        writeseg(tmp,SECTSIZE,paddr);
+        file->offset+=cur_sec;
+        if(file->offset>directory.entries[file->inode_offset].file_size){
+            directory.entries[file->inode_offset].file_size=file->offset;
+        }
+        return cur_sec+write(fd,buf+cur_sec,len-cur_sec);
+    }
     return 1;
 }
 
