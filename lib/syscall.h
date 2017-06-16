@@ -23,6 +23,11 @@
 #define SYS_PTHREAD_CREATE 4017
 #define SYS_SEM_TRYWAIT  4018
 #define TIMER_HANDLERS_MAX 100
+#define SYS_OPEN		4019
+#define SYS_CLOSE		4020
+#define SYS_READ 		4021
+#define SYS_WRITE		4022
+#define SYS_LSEEK		4023
 
 
 unsigned int system_get_tick();
@@ -49,6 +54,11 @@ void system_sem_wait(void *);
 void system_sem_post(void *);
 int system_sem_trywait(void*);
 void system_thread_create(uint32_t func);
+int fs_open(const char *pathname, int flags);
+int fs_read(int fd, void *buf, int len);
+int fs_write(int fd, void *buf, int len);
+int fs_lseek(int fd, int offset, int whence);
+int fs_close(int fd);
 typedef struct timer_handler{
     void (*ptr)(void);
     int used;

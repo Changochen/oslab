@@ -3,6 +3,7 @@
 #include <lib/video.h>
 #include <lib/keyboard.h>
 
+#include <inc/fs.h>
 #include <lib/syscall.h>
 #include "inc/process.h"
 //extern timer_handler timer_handlers[TIMER_HANDLERS_MAX];
@@ -13,7 +14,22 @@ extern int fork();
 extern int thread_create();
 void do_syscall(struct TrapFrame *tf) {
     switch(tf->eax) {
-        /*to be finished*/
+        /* to be finished */
+        case SYS_OPEN:
+            tf->eax=open((const char*)tf->ebx,tf->ecx);
+            break;
+        case SYS_WRITE:
+            tf->eax=write(tf->ebx,(void*)tf->ecx,tf->edx);
+            break;
+        case SYS_CLOSE:
+            tf->eax=close(tf->ebx);
+            break;
+        case SYS_LSEEK:
+            tf->eax=lseek(tf->ebx,tf->ecx,tf->edx);
+            break;
+        case SYS_READ:
+            tf->eax=read(tf->ebx,(void*)tf->ecx,tf->edx);
+            break;
         case SYS_SEM_INIT:
             sem_init((Sem*)tf->ebx,tf->ecx);
             break;
@@ -29,7 +45,6 @@ void do_syscall(struct TrapFrame *tf) {
         case SYS_SEM_TRYWAIT:
             tf->eax=sem_trywait((Sem*)tf->ebx);
             break;
-        /* to be finished */
         case SYS_PTHREAD_CREATE:
             thread_create(tf->ebx);
             break;

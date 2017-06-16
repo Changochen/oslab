@@ -14,6 +14,35 @@ unsigned int system_get_tick(){
     return t;
 }
 
+int fs_open(const char *pathname, int flags){
+    int success;
+    asm volatile("int $0x80": "=a"(success) : "a"(SYS_OPEN),"b"(pathname),"c"(flags));
+    return success;
+}
+
+int fs_read(int fd, void *buf, int len){
+    int read_byte;
+    asm volatile("int $0x80": "=a"(read_byte) : "a"(SYS_READ),"b"(fd),"c"(buf),"d"(len));
+    return read_byte;
+}
+
+int fs_write(int fd, void *buf, int len){
+    int write_byte;
+    asm volatile("int $0x80": "=a"(write_byte) : "a"(SYS_WRITE),"b"(fd),"c"(buf),"d"(len));
+    return write_byte;
+}
+
+int fs_lseek(int fd, int offset, int whence){
+    int success;
+    asm volatile("int $0x80": "=a"(success) : "a"(SYS_LSEEK),"b"(fd),"c"(offset),"d"(whence));
+    return success;
+}
+
+int fs_close(int fd){
+    int success;
+    asm volatile("int $0x80": "=a"(success) : "a"(SYS_CLOSE),"b"(fd));
+    return success;
+}
 void system_thread_create(uint32_t func){
     asm volatile("int $0x80": : "a"(SYS_PTHREAD_CREATE),"b"(func));
 }
@@ -41,10 +70,10 @@ void system_sem_init(void* sem,int count){
 }
 
 char system_key_down(char s){
-	char r_eax = 0;
-	asm volatile("int $0x80": : "a"(SYS_GET_KEY), "b"(s));
-	asm volatile("movl %%eax, %0\n" : : "m"(r_eax));
-	return r_eax;
+    char r_eax = 0;
+    asm volatile("int $0x80": : "a"(SYS_GET_KEY), "b"(s));
+    asm volatile("movl %%eax, %0\n" : : "m"(r_eax));
+    return r_eax;
 }
 
 int __draw_point(int x,int y,int color){

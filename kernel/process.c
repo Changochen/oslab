@@ -8,12 +8,12 @@
 #include "inc/pmap.h"
 #include "inc/elf.h"
 #include "inc/disk.h"
-
+#include "inc/fs.h"
 #define ELFADDR 0
 #define elf   ((struct ELFHeader *) ELFADDR)
 #define PSZIE 0x1000
 #define USER_STACK 0xeebfe000
-#define MDEBUG 1
+#define MDEBUG 0
 uint32_t entry;
 PCB PCBPool[MAXPROCESS];
 struct TrapFrame tfPool[MAXPROCESS];
@@ -279,4 +279,21 @@ int sem_trywait(Sem* sem){
     else sem->count--;
     asm volatile("sti");
     return res;
+}
+
+
+int open(const char *pathname, int flags){
+    return 1;
+}
+int read(int fd, void *buf, int len){
+    return 1;
+}
+int write(int fd, void *buf, int len){
+    return 1;
+}
+int lseek(int fd, int offset, int whence){
+    return 1;
+}
+int close(int fd){
+    return 1;
 }
