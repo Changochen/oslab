@@ -418,32 +418,6 @@ int open(const char *pathname, int flags){
     return p->fd;
 }
 
-int read(int fd, void *buf, int len){
-    FCB* file=get_fcb_by_fd(fd);
-    if((file->flag&O_RDONLY)==0)return -1;
-    if((file->offset+len)>directory.entries[file->inode_offset].file_size){
-        len=directory.entries[file->inode_offset].file_size-file->offset;
-        if(len<0)return -1;
-    }
-    unsigned int cur_sec=offset_left(file->offset);
-    unsigned block_offset=offset_to_block_offset(file->offset);
-    unsigned int paddr=block_to_address(inodes[file->inode_offset].blocks[block_offset]);
-    paddr+=(512-cur_sec);
-    unsigned char tmp[512];
-    if(cur_sec>len){
-        memset(tmp,0,SECTSIZE);
-        readseg(tmp,SECTSIZE,paddr);
-        memcpy(buf,tmp,len);
-        file->offset+=len;
-        return len;
-    }else{
-        memset(tmp,0,SECTSIZE);
-        readseg(tmp,SECTSIZE,paddr);
-        memcpy(buf,tmp,cur_sec);
-        file->offset+=cur_sec;
-        return cur_sec+read(fd,buf+cur_sec,len-cur_sec);
-    }
-}
 
 unsigned int find_new_block(){
     unsigned int res;
@@ -461,13 +435,61 @@ unsigned int find_new_block(){
     return 0;
 }
 
+unsigned int big_file_block_offset(unsigned int block_offset,unsigned int next_block_num){
+    unsigned int paddr=block_to_address(next_block_num);
+    inode tmp;
+    readseg((unsigned char*)tmp.blocks,SECTSIZE,paddr);
+    if(block_offset<511){
+        return tmp.blocks[block_offset];
+    }else{
+        return big_file_block_offset(block_offset-511,tmp.blocks[511]);
+    }
+    
+}
+
+int read(int fd, void *buf, int len){
+    FCB* file=get_fcb_by_fd(fd);
+    if((file->flag&O_RDONLY)==0)return -1;
+    if((file->offset+len)>directory.entries[file->inode_offset].file_size){
+        len=directory.entries[file->inode_offset].file_size-file->offset;
+        if(len<0)return -1;
+    }
+    unsigned int cur_sec=offset_left(file->offset);
+    unsigned block_offset=offset_to_block_offset(file->offset);
+    unsigned int paddr=0;
+    if(block_offset<127){
+        paddr=block_to_address(inodes[file->inode_offset].blocks[block_offset]);
+    }else{
+        paddr=block_to_address(big_file_block_offset(block_offset-127,inodes[file->inode_offset].blocks[127]));
+    }
+    paddr+=(512-cur_sec);
+    unsigned char tmp[512];
+    if(cur_sec>len){
+        memset(tmp,0,SECTSIZE);
+        readseg(tmp,SECTSIZE,paddr);
+        memcpy(buf,tmp,len);
+        file->offset+=len;
+        return len;
+    }else{
+        memset(tmp,0,SECTSIZE);
+        readseg(tmp,SECTSIZE,paddr);
+        memcpy(buf,tmp,cur_sec);
+        file->offset+=cur_sec;
+        return cur_sec+read(fd,buf+cur_sec,len-cur_sec);
+    }
+}
 
 int write(int fd, void *buf, int len){
     FCB* file=get_fcb_by_fd(fd);
     if((file->flag&O_WRONLY)==0)return -1;
     unsigned int cur_sec=offset_left(file->offset);
     unsigned block_offset=offset_to_block_offset(file->offset);
-    unsigned block=inodes[file->inode_offset].blocks[block_offset];
+    unsigned block=0;
+    if(block_offset<127){
+        block=inodes[file->inode_offset].blocks[block_offset];
+    }else{
+        block=big_file_block_offset(block_offset-127,inodes[file->inode_offset].blocks[127]);
+    }
     if(block==0){
         inodes[file->inode_offset].blocks[block_offset]=block=find_new_block();
     }
@@ -481,7 +503,6 @@ int write(int fd, void *buf, int len){
         writeseg(tmp,SECTSIZE,paddr);
         file->offset+=len;
         if(file->offset>directory.entries[file->inode_offset].file_size){
-            printf("Yes\n");
             directory.entries[file->inode_offset].file_size=file->offset;
         }
         writeseg(bmap.mask,BITMAP_SIZE,BITMAP_OFFSET);

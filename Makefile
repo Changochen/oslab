@@ -123,6 +123,9 @@ qemu: $(IMAGE)
 image: $(IMAGE)
 
 run: $(IMAGE)
+	gcc -m32 -o formatter formatter.c
+	gcc -m32 -o copy2myfs copy2myfs.c
+	gcc -m32 -o read_myfs read_myfs.c
 	./formatter
 	./copy2myfs hello.txt
 	python fill2.py >>disks.bin
@@ -145,3 +148,6 @@ clean:
 	@rm -rf $(KERNEL)  2> /dev/null
 	@rm -rf $(IMAGE)   2> /dev/null
 	@rm -rf $(GAME)   2> /dev/null
+	@rm -rf formatter   2> /dev/null
+	@rm -rf copy2myfs   2> /dev/null
+	@rm -rf read_myfs   2> /dev/null
