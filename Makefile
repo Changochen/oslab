@@ -125,6 +125,7 @@ image: $(IMAGE)
 run: $(IMAGE)
 	./formatter
 	./copy2myfs hello.txt
+	python fill2.py >>disks.bin
 	$(QEMU) $(QEMU_RUN_OPTIONS) disks.bin
 	#$(IMAGE)
 

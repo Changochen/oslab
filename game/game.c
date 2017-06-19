@@ -10,6 +10,7 @@
 #include "inc/disk.h"
 #include "inc/types.h"
 #include "inc/process.h"
+#include "inc/fs.h"
 extern unsigned int get_tick();
 unsigned int  counter=0;
 unsigned int counter2=0;
@@ -94,20 +95,20 @@ int main(){
         printk("parent\n");
         }
         */
-    int fd=fs_open("hello.txt",0);
+    int fd=fs_open("hello.txt",O_RDONLY);
     char test[513];
-    memcpy(test,"aaaaaaaaaa",10);
+    memset(test,'a',512);
+    test[512]='\n';
     if(fd!=-1){
-        fs_write(fd,test,10);
+        fs_read(fd,test,513);
         fs_close(fd);
     }else{
         printk("FUCK\n");
     }
-    fd=fs_open("hello.txt",0);
+    fd=fs_open("test.txt",O_WRONLY|O_CREAT);
     if(fd!=-1){
-        fs_read(fd,test,10);
-        test[10]=0;
-        printk("%s\n",test);
+        int n=fs_write(fd,test,10);
+        printk("write %d bytes\n",n);
         fs_close(fd);
     }else{
         printk("FUCK\n");

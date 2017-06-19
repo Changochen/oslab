@@ -21,10 +21,10 @@ typedef enum{
 
 typedef enum 
 {
-	O_RDONLY,
-	O_WRONLY,
-	O_RDWR,
-	O_APPEND
+	O_RDONLY=1,
+	O_WRONLY=2,
+	O_RDWR=4,
+	O_CREAT=8
 }FILE_FLAG;
 
 #pragma pack(0)

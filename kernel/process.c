@@ -42,6 +42,7 @@ unsigned char bits[]={
 };
 
 int get_dir_entry_by_name(const char* pathname);
+unsigned int find_new_block();
 uint32_t pcb_num(PCB* head){
     uint32_t num = 0;
     PCB* p = head;
@@ -389,9 +390,24 @@ FCB* get_fcb_by_fd(int fd){
     return NULL;
 }
 
+unsigned int get_new_entry(){
+    for(int i=0;i!=INODE_NUM;i++){
+        if(strlen(directory.entries[i].filename)==0)return i;
+    }
+    return 0;
+}
+
 int open(const char *pathname, int flags){
     int off=get_dir_entry_by_name(pathname);
-    if(off==-1)return -1;
+    if(off==-1){
+        if((flags&O_CREAT)==0)return -1;
+        off=get_new_entry();
+        if(off==0)return -1;
+        memcpy(directory.entries[off].filename,pathname,strlen(pathname));
+        directory.entries[off].inode_offset=off;
+        directory.entries[off].file_size=0;
+        inodes[off].blocks[0]=find_new_block();
+    }
     FCB* p=fcb_create();
     p->inode_offset=off;
     p->flag=flags;
@@ -404,6 +420,7 @@ int open(const char *pathname, int flags){
 
 int read(int fd, void *buf, int len){
     FCB* file=get_fcb_by_fd(fd);
+    if((file->flag&O_RDONLY)==0)return -1;
     if((file->offset+len)>directory.entries[file->inode_offset].file_size){
         len=directory.entries[file->inode_offset].file_size-file->offset;
         if(len<0)return -1;
@@ -447,6 +464,7 @@ unsigned int find_new_block(){
 
 int write(int fd, void *buf, int len){
     FCB* file=get_fcb_by_fd(fd);
+    if((file->flag&O_WRONLY)==0)return -1;
     unsigned int cur_sec=offset_left(file->offset);
     unsigned block_offset=offset_to_block_offset(file->offset);
     unsigned block=inodes[file->inode_offset].blocks[block_offset];
@@ -503,7 +521,5 @@ int lseek(int fd, int offset, int whence){
 
 int close(int fd){
     FCB* file=get_fcb_by_fd(fd);
-    //return fcb_del(&cur_pcb->files,file);
-    fcb_del(&cur_pcb->files,file);
-    return  1;
+    return fcb_del(&cur_pcb->files,file);
 }
