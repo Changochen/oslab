@@ -268,7 +268,7 @@ void schedule(){
         }else if(cur_pcb->ps==BLOCKED){
             pcb_enqeque(&block_l,cur_pcb);
             cur_pcb=NULL;
-        }else if(cur_pcb->time_lapse>100||cur_pcb->ps==YIELD){
+        }else if(cur_pcb->time_lapse>5||cur_pcb->ps==YIELD){
             cur_pcb->ps=READY;
             pcb_enqeque(&ready_l,cur_pcb);
             cur_pcb=NULL;
@@ -381,6 +381,18 @@ int get_dir_entry_by_name(const char* pathname){
     return -1;
 }
 
+void start_game(){
+    PCB *pcb = pcb_create();
+    program_load(pcb,"game.bin");
+    pcb_ready(pcb);
+}
+void ls(){
+    for(int i=0;i!=INODE_NUM;i++){
+        if(directory.entries[i].file_size!=0){
+            printf("%s\n",directory.entries[i].filename);
+        }
+    }
+}
 FCB* get_fcb_by_fd(int fd){
     FCB* res=cur_pcb->files;
     while(res!=NULL){
@@ -444,7 +456,6 @@ unsigned int big_file_block_offset(unsigned int block_offset,unsigned int next_b
     }else{
         return big_file_block_offset(block_offset-511,tmp.blocks[511]);
     }
-    
 }
 
 int read(int fd, void *buf, int len){
@@ -452,7 +463,7 @@ int read(int fd, void *buf, int len){
     if((file->flag&O_RDONLY)==0)return -1;
     if((file->offset+len)>directory.entries[file->inode_offset].file_size){
         len=directory.entries[file->inode_offset].file_size-file->offset;
-        if(len<0)return -1;
+        if(len<=0)return -1;
     }
     unsigned int cur_sec=offset_left(file->offset);
     unsigned block_offset=offset_to_block_offset(file->offset);
@@ -543,4 +554,49 @@ int lseek(int fd, int offset, int whence){
 int close(int fd){
     FCB* file=get_fcb_by_fd(fd);
     return fcb_del(&cur_pcb->files,file);
+}
+
+
+void cat(char* filename){
+    int fd=open(filename,O_RDONLY);
+    int siz;
+    char buffer[11];
+    while((siz=read(fd,buffer,10))>0){
+        buffer[siz]='\0';
+        printf("%s",buffer);
+    }
+}
+
+void mv(char* srcfile,char* destfile){
+    int i=get_dir_entry_by_name(srcfile);
+    if(i==-1)return;
+    memset(directory.entries[i].filename,0,24);
+    memcpy(directory.entries[i].filename,destfile,strlen(destfile));
+}
+
+void rm(char* filename){
+    int i=get_dir_entry_by_name(filename);
+    if(i==-1)return;
+    memset(directory.entries[i].filename,0,24);
+    directory.entries[i].file_size=0;
+}
+
+void cp(char* srcfile,char* destfile){
+    if(strcmp(srcfile,destfile)==0)return;
+    int i=get_dir_entry_by_name(srcfile);
+    if(i==-1)return;
+    unsigned int newi=get_new_entry();
+    if(newi==0)return;
+    memcpy(directory.entries[newi].filename,destfile,strlen(destfile));
+    directory.entries[newi].file_size=directory.entries[i].file_size;
+    directory.entries[newi].inode_offset=newi;
+    unsigned char buffer[512];
+    for(int j=0;j!=128;j++){
+        if(inodes[i].blocks[j]==0)return;
+        inodes[newi].blocks[j]=find_new_block();
+        unsigned int paddr=block_to_address(inodes[i].blocks[j]);
+        readseg(buffer,SECTSIZE,paddr);
+        paddr=block_to_address(inodes[newi].blocks[j]);
+        writeseg(buffer,SECTSIZE,paddr);
+    }
 }

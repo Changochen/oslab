@@ -4,6 +4,7 @@
 #include "common.h"
 
 int8_t get_key(char s);
+int8_t getc();
 int8_t get_lastkey();
 void press_key(int code);
 

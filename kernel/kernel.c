@@ -13,6 +13,7 @@
 #include "inc/process.h"
 #include "lib/syscall.h"
 #include "inc/fs.h"
+#include "kernel/monitor.h"
 #define elf   ((struct ELFHeader *) 102400)
 #define ELF 102400
 extern void init_segment();
@@ -38,12 +39,14 @@ int main(){
     init_fs();
 
     PCB *pidle = pcb_create();
-    pcb_funcload(pidle, init,SYSTEM_PRI);
+    //pcb_funcload(pidle, init,SYSTEM_PRI);
+    pcb_funcload(pidle,monitor,SYSTEM_PRI);
+    /*
     PCB *pcb = pcb_create();
-    //pcb_load(pcb, 102400);
     program_load(pcb,"game.bin");
+    */
     pcb_ready(pidle);
-    pcb_ready(pcb);
+    //pcb_ready(pcb);
     schedule();
     printf("%s\n", "Never return otherwise you are fucked!");
     while (1){};

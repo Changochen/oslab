@@ -81,7 +81,7 @@ void consumer(){
 }
 
 int main(){
-    printk("game start!\n");
+    //printk("game start!\n");
     /*
     system_sem_init(&mutex,1);
     system_thread_create((uint32_t)producer);
@@ -95,6 +95,7 @@ int main(){
         printk("parent\n");
         }
         */
+    /*
     int fd=fs_open("hello.txt",O_RDONLY);
     char test[513];
     memset(test,'a',512);
@@ -113,6 +114,7 @@ int main(){
     }else{
         printk("FUCK\n");
     }
+    */
     initVideo(0xFF);
     int flag=1;
     uint32_t old_time=0;

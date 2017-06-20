@@ -6,4 +6,5 @@
 
 void __attribute__((__noinline__))  printf(const char *ctl, ...);
 void __attribute__((__noinline__))  printk(const char *ctl, ...);
+char * readline(const char *prompt);
 #endif

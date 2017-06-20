@@ -7,7 +7,7 @@
 
 // Represents true-or-false values
 typedef int bool;
-
+#define ARRAY_SIZE(a)	(sizeof(a) / sizeof(a[0]))
 // Explicitly-sized versions of integer types
 typedef __signed char int8_t;
 typedef unsigned char uint8_t;
