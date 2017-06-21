@@ -27,7 +27,6 @@ void init(){
 }
 
 int main(){
-    printf("hello,kernel\n");
     init_page();
     init_segment();
     init_serial();

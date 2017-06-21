@@ -41,6 +41,15 @@ unsigned char bits[]={
     0x80,0x40,0x20,0x10,8,4,2,1
 };
 
+const char banner_c[7][208]={
+"   #    ######   #####  ######  ####### #######  #####  #     #   ###         # #    #  #       #     # #     # ####### ######   #####  ######   #####  ####### #     # #     # #     # #     # #     # ####### ",
+"  # #   #     # #     # #     # #       #       #     # #     #    #          # #   #   #       ##   ## ##    # #     # #     # #     # #     # #     #    #    #     # #     # #  #  #  #   #   #   #       #  ",
+" #   #  #     # #       #     # #       #       #       #     #    #          # #  #    #       # # # # # #   # #     # #     # #     # #     # #          #    #     # #     # #  #  #   # #     # #       #   ",
+"#     # ######  #       #     # #####   #####   #  #### #######    #          # ###     #       #  #  # #  #  # #     # ######  #     # ######   #####     #    #     # #     # #  #  #    #       #       #    ",
+"####### #     # #       #     # #       #       #     # #     #    #    #     # #  #    #       #     # #   # # #     # #       #   # # #   #         #    #    #     #  #   #  #  #  #   # #      #      #     ",
+"#     # #     # #     # #     # #       #       #     # #     #    #    #     # #   #   #       #     # #    ## #     # #       #    #  #    #  #     #    #    #     #   # #   #  #  #  #   #     #     #      ",
+"#     # ######   #####  ######  ####### #        #####  #     #   ###    #####  #    #  ####### #     # #     # ####### #        #### # #     #  #####     #     #####     #     ## ##  #     #    #    ####### "
+};
 int get_dir_entry_by_name(const char* pathname);
 unsigned int find_new_block();
 uint32_t pcb_num(PCB* head){
@@ -598,5 +607,29 @@ void cp(char* srcfile,char* destfile){
         readseg(buffer,SECTSIZE,paddr);
         paddr=block_to_address(inodes[newi].blocks[j]);
         writeseg(buffer,SECTSIZE,paddr);
+    }
+}
+
+void banner(char* bp){
+    int len=strlen(bp);
+    if(len>10)len=10;
+    char buffer[7][80];
+    memset(buffer,0,7*80);
+    for(int i=0;i<len;i++){
+        if(bp[i]>64&&bp[i]<91)continue;
+        if(bp[i]>96&&bp[i]<123)bp[i]-=32;
+        else{
+            printf("Unsupported character!\n");
+            return;
+        }
+    }
+    for(int i=0;i<len;i++){
+        for(int j=0;j<7;j++){
+            memcpy(buffer[j]+i*8,banner_c[j]+8*(bp[i]-65),8);
+        }
+    }
+    for(int i=0;i<7;i++){
+        buffer[6][79]=0;
+        printf("%s\n",buffer[i]);
     }
 }

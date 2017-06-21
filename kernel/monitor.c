@@ -17,6 +17,7 @@ extern void cat(char* filename);
 extern void mv(char*,char*);
 extern void cp(char*,char*);
 extern void rm(char*);
+extern void banner(char*);
 struct Command {
     const char *name;
     const char *desc;
@@ -40,6 +41,14 @@ int mon_echo(int argc, char **argv, struct Trapframe *tf){
     return 0;
 }
 
+int mon_banner(int argc, char **argv, struct Trapframe *tf){
+    if(argc!=2){
+        printf("Usage :banner string\n");
+        return -1;
+    }
+    banner(argv[1]);
+    return 0;
+}
 
 int mon_mv(int argc,char **argv,struct Trapframe *tf){
     if(argc!=3){
@@ -82,6 +91,7 @@ static struct Command commands[] = {
     { "mv" ,  "Rename file", mon_mv},
     { "rm" ,  "Delete file", mon_rm},
     { "cp" ,  "Copy file", mon_cp},
+    { "banner","Create banner",mon_banner},
     { "game", "Run the game" , mon_game}
 };
 
