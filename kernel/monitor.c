@@ -117,8 +117,8 @@ int mon_ls(int argc, char **argv, struct Trapframe *tf){
 #define WHITESPACE "\t\r\n "
 #define MAXARGS 16
 
-    static int
-runcmd(char *buf, struct Trapframe *tf)
+   int
+exec(char *buf, struct Trapframe *tf)
 {
     int argc;
     char *argv[MAXARGS];
@@ -172,7 +172,7 @@ monitor(struct Trapframe *tf)
     while (1) {
         buf = readline("$> ");
         if (buf != NULL)
-            if (runcmd(buf, tf) < 0)
+            if (exec(buf, tf) < 0)
                 break;
     }
 }

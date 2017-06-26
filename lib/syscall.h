@@ -28,6 +28,7 @@
 #define SYS_READ 		4021
 #define SYS_WRITE		4022
 #define SYS_LSEEK		4023
+#define SYS_EXEC        4024
 
 
 unsigned int system_get_tick();
@@ -53,6 +54,7 @@ void system_sem_destroy(void*);
 void system_sem_wait(void *);
 void system_sem_post(void *);
 int system_sem_trywait(void*);
+void system_exec(char*);
 void system_thread_create(uint32_t func);
 int fs_open(const char *pathname, int flags);
 int fs_read(int fd, void *buf, int len);

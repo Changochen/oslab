@@ -47,6 +47,10 @@ void system_thread_create(uint32_t func){
     asm volatile("int $0x80": : "a"(SYS_PTHREAD_CREATE),"b"(func));
 }
 
+void system_exec(char* command){
+    asm volatile("int $0x80": : "a"(SYS_EXEC),"b"(command));
+}
+
 void system_sem_destroy(void *sem){
     asm volatile("int $0x80": : "a"(SYS_SEM_DESTROY),"b"(sem));
 }

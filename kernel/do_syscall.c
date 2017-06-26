@@ -12,11 +12,15 @@ extern int8_t get_key(char s);
 extern void schedule();
 extern int fork();
 extern int thread_create();
+extern int exec(char*,struct TrapFrame*);
 void do_syscall(struct TrapFrame *tf) {
     switch(tf->eax) {
         /* to be finished */
         case SYS_OPEN:
             tf->eax=open((const char*)tf->ebx,tf->ecx);
+            break;
+        case SYS_EXEC:
+            exec((char*)tf->ebx,NULL);
             break;
         case SYS_WRITE:
             tf->eax=write(tf->ebx,(void*)tf->ecx,tf->edx);
